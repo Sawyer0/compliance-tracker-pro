@@ -1,18 +1,23 @@
 // Global Layout Wrapper
+import './globals.css';
+import { type Metadata } from "next";
+import { Providers } from "./providers";
+export const metadata: Metadata = {
+  title: "Compliance Tracker Dashboard",
+  description: "Built with passsion by Dawan Sawyer",
+};
 
 export default function RootLayout({
-    children,
-
-}:{
-    children: React.ReactNode
+  children,
+}: {
+  children: React.ReactNode;
 }) {
-    return (
-        <html lang="en">
-            <body>
-                {/* Layout UI */}
-                {/* Place children where I want to render a page or nested layout */}
-                <main>{children}</main>
-            </body>
-        </html>
-    )
-} 
+  return (
+    <html lang="en">
+      <body>
+        {/* Layout UI */}
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
