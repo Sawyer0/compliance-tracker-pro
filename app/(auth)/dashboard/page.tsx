@@ -1,9 +1,11 @@
-// Main dashboard with department cards
+"use client";
+
+import { useEffect } from "react";
 
 export default function DashboardPage() {
-  return (
-    <section>
-        <h1 className="text-xl font-bold mb-4">Dashboard</h1>
-    </section>
-  );
+  useEffect(() => {
+    fetch("/api/assign-role", { method: "POST" });
+  }, []);
+
+  return <div>Welcome to your dashboard</div>;
 }
