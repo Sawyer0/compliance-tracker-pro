@@ -1,7 +1,7 @@
-// Global Layout Wrapper
-import './globals.css';
+import "../globals.css";
 import { type Metadata } from "next";
-import { Providers } from "./providers";
+import { Providers } from "../providers";
+
 export const metadata: Metadata = {
   title: "Compliance Tracker Dashboard",
   description: "Built with passsion by Dawan Sawyer",
