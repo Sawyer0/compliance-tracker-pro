@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/getSupabaseClient";
 import DashboardCard from "@/components/DashboardCard";
+import { Department } from "@/types/checklist";
 
 export default function DashboardPage() {
   const [supabase, setSupabase] = useState<any>(null);
@@ -25,11 +26,41 @@ export default function DashboardPage() {
     if (!supabase) return;
 
     const fetchDepartments = async () => {
-      const { data, error } = await supabase.from("departments").select("*");
+      const { data, error } = await supabase.from("departments").select(`
+          id,
+          name,
+          checklists (
+            completed,
+            due_date
+          )
+        `);
+
       if (error) {
         console.error("Error fetching departments:", error);
       } else {
-        setDepartments(data);
+        const enrichedDepartments = data.map((dept: Department) => {
+          const totalTasks = dept.checklists?.length || 0;
+          const completedTasks =
+            dept.checklists?.filter((task) => task.completed).length || 0;
+          const overdueTasks =
+            dept.checklists?.filter(
+              (task) => !task.completed && new Date(task.due_date) < new Date()
+            ).length || 0;
+
+          const progress =
+            totalTasks > 0
+              ? Math.round((completedTasks / totalTasks) * 100)
+              : 0;
+
+          return {
+            ...dept,
+            totalTasks,
+            overdueTasks,
+            progress,
+          };
+        });
+
+        setDepartments(enrichedDepartments);
       }
     };
 
@@ -46,9 +77,9 @@ export default function DashboardPage() {
             key={dept.id}
             id={dept.id}
             name={dept.name}
-            progress={dept.progress}
             totalTasks={dept.totalTasks}
             overdueTasks={dept.overdueTasks}
+            progress={dept.progress}
           />
         ))}
       </ul>
