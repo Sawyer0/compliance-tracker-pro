@@ -1,10 +1,11 @@
 "use client";
+import React from "react";
 
 import { useState } from "react";
 import { ChecklistItem as ItemType } from "@/types/checklist";
 import { getSupabaseClient } from "@/lib/getSupabaseClient";
 import { useChecklistStore } from "@/store/checklistStore";
-// import NoteModal from './NoteModal' // once implemented
+import NoteModal from './NoteModal' 
 
 interface Props {
   item: ItemType;
@@ -64,8 +65,8 @@ export default function ChecklistItem({ item }: Props) {
         </button>
       </div>
 
-      {/* Placeholder for modal */}
-      {/* {showNoteModal && <NoteModal item={item} onClose={() => setShowNoteModal(false)} />} */}
+      <NoteModal item={item} onClose={() => setShowNoteModal(false)} />
+      {showNoteModal && <NoteModal item={item} onClose={() => setShowNoteModal(false)} />} 
     </li>
   );
 }
