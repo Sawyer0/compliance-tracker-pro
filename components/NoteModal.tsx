@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useState } from "react";
 import { ChecklistItem } from "@/types/checklist";
 import { getSupabaseClient } from "@/lib/getSupabaseClient";

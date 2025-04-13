@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { Building, AlertCircle } from "lucide-react";
 
@@ -44,6 +45,7 @@ export default function DashboardCard({
         </div>
         <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
           <div
+            role="progressbar"
             className="h-full bg-blue-600 rounded-full transition-all"
             style={{ width: `${progress}%` }}
           />

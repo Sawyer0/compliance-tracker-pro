@@ -12,6 +12,7 @@ describe("ChecklistItem", () => {
       notes: "",
       department_id: "dept-1",
       created_at: "2025-04-13T00:00:00Z",
+      due_date: "2024-04-01T00:00:00.000Z",
     };
 
     // Render the component
