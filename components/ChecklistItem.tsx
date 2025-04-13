@@ -1,11 +1,10 @@
 "use client";
-import React from "react";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { ChecklistItem as ItemType } from "@/types/checklist";
 import { getSupabaseClient } from "@/lib/getSupabaseClient";
 import { useChecklistStore } from "@/store/checklistStore";
-import NoteModal from './NoteModal' 
+// import NoteModal from "./NoteModal";
 
 interface Props {
   item: ItemType;
@@ -18,12 +17,10 @@ export default function ChecklistItem({ item }: Props) {
 
   const onStatusChange = async () => {
     setLoading(true);
-
     const res = await fetch("/api/supabase-token");
     const { token } = await res.json();
     const supabase = getSupabaseClient(token);
-
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("checklists")
       .update({ completed: !item.completed })
       .eq("id", item.id)
@@ -34,39 +31,32 @@ export default function ChecklistItem({ item }: Props) {
     setLoading(false);
   };
 
-  const onNoteClick = () => {
-    setShowNoteModal(true);
-  };
-
   return (
-    <li className="bg-white p-4 shadow rounded flex justify-between items-start gap-4">
+    <li className="checklist-item">
       <div>
-        <p className="font-medium">{item.title}</p>
-        <p className="text-sm text-gray-500">
+        <p className="item-title">{item.title}</p>
+        <p className="item-status">
           Status: {item.completed ? "Completed" : "Pending"}
         </p>
-        {item.notes && <p className="text-sm italic mt-1">{item.notes}</p>}
+        {item.notes && <p className="item-note">{item.notes}</p>}
       </div>
-
       <div className="flex gap-2 items-center">
         <button
           onClick={onStatusChange}
           disabled={loading}
-          className="text-sm px-3 py-1 bg-blue-500 text-white rounded"
+          className="btn-action"
         >
           {item.completed ? "Mark Incomplete" : "Mark Complete"}
         </button>
-
         <button
-          onClick={onNoteClick}
-          className="text-sm px-3 py-1 bg-gray-200 rounded"
+          onClick={() => setShowNoteModal(true)}
+          className="btn-secondary"
         >
           Add Note
         </button>
       </div>
-
-      <NoteModal item={item} onClose={() => setShowNoteModal(false)} />
-      {showNoteModal && <NoteModal item={item} onClose={() => setShowNoteModal(false)} />} 
+      {/* <NoteModal item={item} onClose={() => setShowNoteModal(false)} /> */}
+      {/* {showNoteModal && <NoteModal item={item} onClose={() => setShowNoteModal(false)} />}  */}
     </li>
   );
 }

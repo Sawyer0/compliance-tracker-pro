@@ -1,1 +1,82 @@
 @import "tailwindcss";
+
+/* Typography */
+.text-muted {
+    @apply text-sm text-gray-500 italic;
+  }
+  
+  /* Buttons */
+  .btn-action {
+    @apply text-sm px-3 py-1 bg-blue-500 text-white rounded;
+  }
+  
+  .btn-secondary {
+    @apply text-sm px-3 py-1 bg-gray-200 rounded;
+  }
+  
+  /* Checklist Item Card */
+  .checklist-item {
+    @apply bg-white p-4 shadow rounded flex justify-between items-start gap-4;
+  }
+  
+  .item-title {
+    @apply font-medium;
+  }
+  
+  .item-status {
+    @apply text-sm text-gray-500;
+  }
+  
+  .item-note {
+    @apply text-sm italic mt-1;
+  }
+  
+  /* Checklist Table */
+  .list-spacing {
+    @apply space-y-3;
+  }
+  
+  /* Layout */
+  .layout-wrapper {
+    @apply flex h-screen;
+  }
+  
+  .layout-sidebar {
+    @apply w-[30%] min-w-[250px] max-w-sm border-r;
+  }
+  
+  .layout-main {
+    @apply w-[70%] flex flex-col;
+  }
+  
+  .layout-content {
+    @apply flex-1 overflow-auto p-6;
+  }
+  
+  /* Page */
+  .page-wrapper {
+    @apply p-4 space-y-4;
+  }
+  
+  .back-link {
+    @apply text-sm text-blue-600 underline;
+  }
+  
+  /* Progress Bar */
+  .progress-bg {
+    @apply w-full bg-gray-100 h-4 rounded overflow-hidden;
+  }
+  
+  .progress-fill {
+    @apply h-full bg-green-500 transition-all;
+  }
+  
+  /* Form */
+  .dropdown {
+    @apply border px-2 py-1 rounded text-sm;
+  }
+  
+  /* Loader */
+  .loading-text {
+    @apply text-sm text-gray-500 italic;
+  }

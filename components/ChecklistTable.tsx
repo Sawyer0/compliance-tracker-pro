@@ -5,7 +5,6 @@ import ChecklistItem from "./ChecklistItem";
 
 export default function ChecklistTable() {
   const { items, filterStatus } = useChecklistStore();
-
   const filteredItems = items.filter((item) => {
     if (filterStatus === "completed") return item.completed;
     if (filterStatus === "pending") return !item.completed;
@@ -14,14 +13,14 @@ export default function ChecklistTable() {
 
   if (filteredItems.length === 0) {
     return (
-      <p className="text-sm text-gray-500 italic">
+      <p className="text-muted">
         No checklist items match your current filter.
       </p>
     );
   }
 
   return (
-    <ul className="space-y-3">
+    <ul className="list-spacing">
       {filteredItems.map((item) => (
         <ChecklistItem key={item.id} item={item} />
       ))}
