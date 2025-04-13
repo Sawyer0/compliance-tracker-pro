@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/getSupabaseClient";
 import { useChecklistStore } from "@/store/checklistStore";
@@ -18,12 +18,17 @@ export default function DepartmentChecklistPage() {
     setFilterStatus,
   } = useChecklistStore();
 
-  const completionRate =
-    items.length > 0
-      ? Math.round(
-          (items.filter((i) => i.completed).length / items.length) * 100
-        )
-      : 0;
+  const [completionRate, setCompletionRate] = useState(0);
+
+  useEffect(() => {
+    setCompletionRate(
+      items.length > 0
+        ? Math.round(
+            (items.filter((i) => i.completed).length / items.length) * 100
+          )
+        : 0
+    );
+  }, [items]);
 
   useEffect(() => {
     if (!deptId) return;
@@ -32,18 +37,33 @@ export default function DepartmentChecklistPage() {
       setLoading(true);
 
       const res = await fetch("/api/supabase-token");
-      const { token } = await res.json();
-      const supabase = getSupabaseClient(token);
 
-      const { data, error } = await supabase
-        .from("checklists")
-        .select("*")
-        .eq("department_id", deptId);
+      if (!res.ok) {
+        console.error("Failed to fetch token:", res.statusText);
+        return;
+      }
 
-        console.log('Dept ID:', deptId)
-    console.log('Checklist fetch result:', { data, error })
+      try {
+        const { token } = await res.json();
+        const supabase = getSupabaseClient(token);
+        const { data, error } = await supabase
+          .from("checklists")
+          .select("*")
+          .eq("department_id", deptId);
 
-      if (data) setItems(data);
+        console.log("Dept ID:", deptId);
+        console.log("Supabase response data:", data);
+        console.log("Supabase response error:", error);
+
+        if (error) {
+          console.error("Supabase error:", error);
+        } else {
+          setItems(data);
+        }
+      } catch (err) {
+        console.error("Error parsing JSON:", err);
+      }
+
       setLoading(false);
     };
 
