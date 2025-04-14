@@ -1,13 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import QuickActionCards from "@/components/dashboard/QuickActionCards";
 import { getSupabaseClient } from "@/lib/getSupabaseClient";
-import DashboardCard from "@/components/DashboardCard";
+import KpiCards from "@/components/dashboard/KpiCards";
+import CompletionBarChart from "@/components/dashboard/CompletionBarChart";
+import TasksLineChart from "@/components/dashboard/TasksLineChart";
+
 import { Department } from "@/types/checklist";
 
 export default function DashboardPage() {
   const [supabase, setSupabase] = useState<any>(null);
   const [departments, setDepartments] = useState<any[]>([]);
+
+  const flatChecklists = departments.flatMap((dept: Department) =>
+    dept.checklists.map((item: any) => ({
+      ...item,
+      department: dept.name,
+    }))
+  );
 
   useEffect(() => {
     fetch("/api/assign-role", { method: "POST" });
@@ -31,7 +42,8 @@ export default function DashboardPage() {
           name,
           checklists (
             completed,
-            due_date
+            due_date,
+            created_at
           )
         `);
 
@@ -69,24 +81,30 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Welcome to your dashboard</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Admin Dashboard</h1>
 
-      <ul className="space-y-4">
-        {departments.map((dept) => (
-          <DashboardCard
-            key={dept.id}
-            id={dept.id}
-            name={dept.name}
-            totalTasks={dept.totalTasks}
-            overdueTasks={dept.overdueTasks}
-            progress={dept.progress}
-          />
-        ))}
-      </ul>
+      <div className="dashboard-section">
+        <h2 className="section-title">Quick Actions</h2>
+        <QuickActionCards />
+      </div>
+
+      <div className="dashboard-section">
+        <h2 className="section-title">Quick Stats</h2>
+        <KpiCards departments={departments} />
+      </div>
 
       <p className="text-sm text-gray-400">
         {departments.length} departments tracked
       </p>
+
+      <div className="dashboard-section">
+        <h2 className="section-title">Task Completion by Department</h2>
+        <CompletionBarChart departments={departments} />
+      </div>
+      <div className="dashboard-section">
+        <h2 className="section-title">Tasks Completed Over Time</h2>
+        <TasksLineChart checklistItems={flatChecklists} />
+      </div>
     </div>
   );
 }
