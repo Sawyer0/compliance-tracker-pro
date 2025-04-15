@@ -12,6 +12,8 @@ export interface Department {
   id: string;
   name: string;
   progress: number;
+  totalTasks?: number;
+  overdueTasks?: number;
   checklists: ChecklistItem[];
 }
 
