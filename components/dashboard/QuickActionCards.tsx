@@ -2,8 +2,6 @@
 
 import React from "react";
 import { Building, ClipboardList, UserPlus, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
 type QuickActionCardsProps = {
   variant?: "left" | "right";
@@ -42,30 +40,27 @@ export default function QuickActionCards({
   const filteredCards = actionCards.filter((card) => card.variant === variant);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       {filteredCards.map((card, index) => (
-        <Card
+        <div
           key={index}
-          className="border-0 shadow-sm hover:shadow-md transition-shadow"
+          className="bg-white/70 backdrop-blur-sm rounded-xl border border-amber-100/50 shadow-sm hover:shadow-md transition-all cursor-pointer p-3 sm:p-4"
+          onClick={() => console.log(`Clicked: ${card.title}`)}
         >
-          <CardContent className="p-4">
-            <Button
-              variant="ghost"
-              className="w-full h-auto flex items-center justify-start text-left p-2"
-              onClick={() => console.log(`Clicked: ${card.title}`)}
-            >
-              <div className="flex items-start gap-3">
-                <div className="action-icon">{card.icon}</div>
-                <div>
-                  <h3 className="action-title">{card.title}</h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {card.description}
-                  </p>
-                </div>
-              </div>
-            </Button>
-          </CardContent>
-        </Card>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="bg-amber-100 text-amber-700 p-2.5 rounded-full flex items-center justify-center min-w-[40px]">
+              {card.icon}
+            </div>
+            <div>
+              <h3 className="font-semibold text-amber-900 text-sm sm:text-base">
+                {card.title}
+              </h3>
+              <p className="text-xs sm:text-sm text-amber-700/80 mt-1 hidden sm:block">
+                {card.description}
+              </p>
+            </div>
+          </div>
+        </div>
       ))}
     </div>
   );

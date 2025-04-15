@@ -1,5 +1,4 @@
-import React from "react";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import React, { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 
 interface KpiCardsProps {
@@ -22,45 +21,84 @@ export default function KpiCards({ departments }: KpiCardsProps) {
   const percentComplete =
     totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
+  // State for counter animation
+  const [counts, setCounts] = useState({
+    total: 0,
+    percent: 0,
+    overdue: 0,
+    depts: 0,
+  });
+
+  useEffect(() => {
+    // Animation duration in ms
+    const duration = 1500;
+    const steps = 30;
+    const interval = duration / steps;
+
+    let currentStep = 0;
+
+    const timer = setInterval(() => {
+      currentStep++;
+      const progress = currentStep / steps;
+
+      setCounts({
+        total: Math.round(progress * totalTasks),
+        percent: Math.round(progress * percentComplete),
+        overdue: Math.round(progress * overdueTasks),
+        depts: Math.round(progress * departments.length),
+      });
+
+      if (currentStep >= steps) {
+        clearInterval(timer);
+        setCounts({
+          total: totalTasks,
+          percent: percentComplete,
+          overdue: overdueTasks,
+          depts: departments.length,
+        });
+      }
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, [totalTasks, percentComplete, overdueTasks, departments.length]);
+
   return (
     <div className="kpi-cards">
-      <Card>
-        <CardContent className="p-4 text-center">
-          <CardTitle className="kpi-title">Total Tasks</CardTitle>
-          <div className="kpi-value">{totalTasks}</div>
-        </CardContent>
-      </Card>
+      <div className="stat-container">
+        <div className="stat-title">TOTAL TASKS</div>
+        <div className="stat-value text-indigo-900">{counts.total}</div>
+      </div>
 
-      <Card>
-        <CardContent className="p-4 text-center">
-          <CardTitle className="kpi-title">Completed</CardTitle>
-          <div className="kpi-value">
-            <Badge variant={percentComplete > 50 ? "default" : "secondary"}>
-              {percentComplete}%
+      <div className="stat-container">
+        <div className="stat-title">COMPLETED</div>
+        <div className="stat-value">
+          <Badge
+            className={`${
+              percentComplete > 50 ? "bg-indigo-600" : "bg-indigo-300"
+            } text-white px-3 py-1 text-sm rounded-full`}
+          >
+            {counts.percent}%
+          </Badge>
+        </div>
+      </div>
+
+      <div className="stat-container">
+        <div className="stat-title">OVERDUE</div>
+        <div className="stat-value">
+          {overdueTasks > 0 ? (
+            <Badge className="bg-rose-500 text-white px-3 py-1 text-sm rounded-full">
+              {counts.overdue}
             </Badge>
-          </div>
-        </CardContent>
-      </Card>
+          ) : (
+            <span className="text-indigo-900">0</span>
+          )}
+        </div>
+      </div>
 
-      <Card>
-        <CardContent className="p-4 text-center">
-          <CardTitle className="kpi-title">Overdue</CardTitle>
-          <div className="kpi-value">
-            {overdueTasks > 0 ? (
-              <Badge variant="destructive">{overdueTasks}</Badge>
-            ) : (
-              <span>0</span>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-4 text-center">
-          <CardTitle className="kpi-title">Departments</CardTitle>
-          <div className="kpi-value">{departments.length}</div>
-        </CardContent>
-      </Card>
+      <div className="stat-container">
+        <div className="stat-title">DEPARTMENTS</div>
+        <div className="stat-value text-indigo-900">{counts.depts}</div>
+      </div>
     </div>
   );
 }
