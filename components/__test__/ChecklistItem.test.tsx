@@ -1,9 +1,37 @@
 import React from "react";
-import { describe, it } from "vitest";
+import { describe, it, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import ChecklistItem from "../ChecklistItem";
+import userEvent from '@testing-library/user-event';
+import ChecklistItem from "@/components/compliance/ChecklistItem"; 
+import { useChecklistStore } from "@/store/checklistStore";
+import { useSupabase } from "@/lib/hooks/useSupabase";
+
+// Mock the hooks
+vi.mock('@/store/checklistStore', () => ({
+  useChecklistStore: vi.fn(() => ({
+    updateItem: vi.fn(),
+  })),
+}));
+
+vi.mock('@/lib/hooks/useSupabase', () => ({
+  useSupabase: vi.fn(() => ({
+    client: { from: vi.fn() }, // Mock a valid client
+    loading: false,
+    error: null,
+  })),
+}));
+
+// Mock NoteModal component
+vi.mock('@/components/compliance/NoteModal', () => ({
+  __esModule: true,
+  default: ({ item, onClose }: { item: any, onClose: () => void }) => <div data-testid="note-modal">Mock Modal</div>
+}));
 
 describe("ChecklistItem", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("renders checklist item with title and buttons", () => {
     const mockItem = {
       id: "1",
@@ -21,7 +49,7 @@ describe("ChecklistItem", () => {
     // Title is rendered
     expect(screen.getByText("Review compliance policy")).toBeInTheDocument();
 
-    // Status line shows “Pending”
+    // Status line shows "Pending"
     expect(screen.getByText(/Status:\s*Pending/i)).toBeInTheDocument();
 
     // Action buttons exist

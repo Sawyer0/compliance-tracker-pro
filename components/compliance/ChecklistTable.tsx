@@ -1,5 +1,3 @@
-"use client";
-
 import { useChecklistStore } from "@/store/checklistStore";
 import ChecklistItem from "./ChecklistItem";
 

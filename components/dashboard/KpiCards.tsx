@@ -1,4 +1,6 @@
-"use client";
+import React from "react";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface KpiCardsProps {
   departments: {
@@ -22,22 +24,43 @@ export default function KpiCards({ departments }: KpiCardsProps) {
 
   return (
     <div className="kpi-cards">
-      <div className="kpi-card">
-        <div className="kpi-title">Total Tasks</div>
-        <div className="kpi-value">{totalTasks}</div>
-      </div>
-      <div className="kpi-card">
-        <div className="kpi-title">Completed</div>
-        <div className="kpi-value">{percentComplete}%</div>
-      </div>
-      <div className="kpi-card">
-        <div className="kpi-title">Overdue</div>
-        <div className="kpi-value text-red-600">{overdueTasks}</div>
-      </div>
-      <div className="kpi-card">
-        <div className="kpi-title">Departments</div>
-        <div className="kpi-value">{departments.length}</div>
-      </div>
+      <Card>
+        <CardContent className="p-4 text-center">
+          <CardTitle className="kpi-title">Total Tasks</CardTitle>
+          <div className="kpi-value">{totalTasks}</div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4 text-center">
+          <CardTitle className="kpi-title">Completed</CardTitle>
+          <div className="kpi-value">
+            <Badge variant={percentComplete > 50 ? "default" : "secondary"}>
+              {percentComplete}%
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4 text-center">
+          <CardTitle className="kpi-title">Overdue</CardTitle>
+          <div className="kpi-value">
+            {overdueTasks > 0 ? (
+              <Badge variant="destructive">{overdueTasks}</Badge>
+            ) : (
+              <span>0</span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4 text-center">
+          <CardTitle className="kpi-title">Departments</CardTitle>
+          <div className="kpi-value">{departments.length}</div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

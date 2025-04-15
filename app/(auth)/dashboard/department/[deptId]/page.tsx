@@ -2,55 +2,49 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getSupabaseClient } from "@/lib/getSupabaseClient";
 import { useChecklistStore } from "@/store/checklistStore";
-import ChecklistTable from "@/components/ChecklistTable";
+import { ChecklistTable } from "@/components/compliance";
+import { useChecklists } from "@/lib/hooks/useChecklists";
+import { ChecklistItem } from "@/types/checklist";
 
 export default function DepartmentChecklistPage() {
   const router = useRouter();
   const { deptId } = useParams();
-  const {
-    items,
-    setItems,
-    setLoading,
-    isLoading,
-    filterStatus,
-    setFilterStatus,
-  } = useChecklistStore();
+  const { setFilterStatus, filterStatus } = useChecklistStore();
   const [completionRate, setCompletionRate] = useState(0);
+
+  const { checklists, isLoading, isError, error, updateChecklist } =
+    useChecklists(deptId as string);
+
+  useEffect(() => {
+    if (checklists) {
+      useChecklistStore.getState().setItems(checklists);
+    }
+  }, [checklists]);
 
   useEffect(() => {
     setCompletionRate(
-      items.length > 0
+      checklists.length > 0
         ? Math.round(
-            (items.filter((i) => i.completed).length / items.length) * 100
+            (checklists.filter((i: ChecklistItem) => i.completed).length /
+              checklists.length) *
+              100
           )
         : 0
     );
-  }, [items]);
+  }, [checklists]);
 
-  useEffect(() => {
-    if (!deptId) return;
-    const fetchChecklist = async () => {
-      setLoading(true);
-      const res = await fetch("/api/supabase-token");
-      if (!res.ok) return;
-      try {
-        const { token } = await res.json();
-        const supabase = getSupabaseClient(token);
-        const { data, error } = await supabase
-          .from("checklists")
-          .select("*")
-          .eq("department_id", deptId);
-        if (error) console.error("Supabase error:", error);
-        else setItems(data);
-      } catch (err) {
-        console.error("Error parsing JSON", err);
-      }
-      setLoading(false);
-    };
-    fetchChecklist();
-  }, [deptId, setItems, setLoading]);
+  if (isLoading) {
+    return <p className="loading-text">Loading checklist…</p>;
+  }
+
+  if (isError) {
+    return (
+      <p className="error-text">
+        Error connecting to database: {(error as Error).message}
+      </p>
+    );
+  }
 
   return (
     <div className="page-wrapper">
@@ -72,7 +66,10 @@ export default function DepartmentChecklistPage() {
       <div className="flex justify-end">
         <select
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value as "all" | "completed" | "pending";
+            setFilterStatus(value);
+          }}
           className="dropdown"
         >
           <option value="all">All</option>
@@ -81,9 +78,7 @@ export default function DepartmentChecklistPage() {
         </select>
       </div>
 
-      {isLoading ? (
-        <p className="loading-text">Loading checklist…</p>
-      ) : items.length === 0 ? (
+      {checklists.length === 0 ? (
         <p className="loading-text">
           No checklist items found for this department.
         </p>
