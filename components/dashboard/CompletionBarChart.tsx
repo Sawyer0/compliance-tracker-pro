@@ -17,7 +17,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Maximize2 } from "lucide-react";
 
 interface Props {
@@ -59,14 +58,12 @@ export default function CompletionBarChart({ departments }: Props) {
 
         <Dialog>
           <DialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="hidden sm:flex"
+            <div
+              className="hidden sm:flex items-center justify-center h-8 w-8 rounded-md border border-gray-200 hover:bg-gray-50 cursor-pointer"
               aria-label="Expand chart"
             >
               <Maximize2 className="h-4 w-4" />
-            </Button>
+            </div>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[90vw] w-[90vw] h-[80vh] bg-white p-0">
             <DialogHeader className="p-4 border-b">
@@ -117,36 +114,35 @@ export default function CompletionBarChart({ departments }: Props) {
         <div className="sm:hidden">
           <Dialog>
             <DialogTrigger className="w-full">
-              <ResponsiveContainer width="100%" height={180}>
-                <BarChart
-                  data={topDepartments}
-                  margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
-                >
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fill: "#6B7280", fontSize: 10 }}
-                    axisLine={{ stroke: "#E5E7EB" }}
-                    tickLine={false}
-                  />
-                  <YAxis domain={[0, 100]} hide={true} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar
-                    dataKey="progress"
-                    fill="#4F46E5"
-                    radius={[4, 4, 0, 0]}
-                    animationDuration={1500}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-              <div className="flex justify-center">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mt-2 text-xs text-indigo-600"
-                >
-                  {departments.length > 4 && `+ ${departments.length - 4} more`}{" "}
-                  Tap to expand
-                </Button>
+              <div className="cursor-pointer">
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart
+                    data={topDepartments}
+                    margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+                  >
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fill: "#6B7280", fontSize: 10 }}
+                      axisLine={{ stroke: "#E5E7EB" }}
+                      tickLine={false}
+                    />
+                    <YAxis domain={[0, 100]} hide={true} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar
+                      dataKey="progress"
+                      fill="#4F46E5"
+                      radius={[4, 4, 0, 0]}
+                      animationDuration={1500}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+                <div className="flex justify-center">
+                  <div className="mt-2 text-xs text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50">
+                    {departments.length > 4 &&
+                      `+ ${departments.length - 4} more`}{" "}
+                    Tap to expand
+                  </div>
+                </div>
               </div>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[90vw] w-[90vw] h-[80vh] bg-white p-0">

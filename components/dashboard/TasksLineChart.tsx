@@ -56,7 +56,6 @@ export default function TasksLineChart({ checklistItems }: Props) {
     counts[date] = (counts[date] || 0) + 1;
   });
 
-  // Sort data by date
   const data = Object.entries(counts)
     .map(([date, count]) => ({
       date,
@@ -76,14 +75,12 @@ export default function TasksLineChart({ checklistItems }: Props) {
 
         <Dialog>
           <DialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="hidden sm:flex"
+            <div
+              className="hidden sm:flex items-center justify-center h-8 w-8 rounded-md border border-gray-200 hover:bg-gray-50 cursor-pointer"
               aria-label="Expand chart"
             >
               <Maximize2 className="h-4 w-4" />
-            </Button>
+            </div>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[90vw] w-[90vw] h-[80vh] bg-white p-0">
             <DialogHeader className="p-4 border-b">
@@ -145,52 +142,50 @@ export default function TasksLineChart({ checklistItems }: Props) {
         <div className="sm:hidden">
           <Dialog>
             <DialogTrigger className="w-full">
-              <ResponsiveContainer width="100%" height={180}>
-                <LineChart
-                  data={recentData}
-                  margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
-                >
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fill: "#6B7280", fontSize: 10 }}
-                    axisLine={{ stroke: "#E5E7EB" }}
-                    tickLine={false}
-                    tickFormatter={(value) =>
-                      value.split("/").slice(0, 2).join("/")
-                    }
-                  />
-                  <YAxis allowDecimals={false} hide={true} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Line
-                    type="monotone"
-                    dataKey="count"
-                    stroke="#10B981"
-                    strokeWidth={2}
-                    dot={{
-                      stroke: "#10B981",
-                      strokeWidth: 2,
-                      fill: "#fff",
-                      r: 3,
-                    }}
-                    activeDot={{
-                      stroke: "#059669",
-                      strokeWidth: 2,
-                      fill: "#10B981",
-                      r: 5,
-                    }}
-                    animationDuration={1500}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-              <div className="flex justify-center">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mt-2 text-xs text-emerald-600"
-                >
-                  {data.length > 5 && `+ ${data.length - 5} more dates`} Tap to
-                  expand
-                </Button>
+              <div className="cursor-pointer">
+                <ResponsiveContainer width="100%" height={180}>
+                  <LineChart
+                    data={recentData}
+                    margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+                  >
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fill: "#6B7280", fontSize: 10 }}
+                      axisLine={{ stroke: "#E5E7EB" }}
+                      tickLine={false}
+                      tickFormatter={(value) =>
+                        value.split("/").slice(0, 2).join("/")
+                      }
+                    />
+                    <YAxis allowDecimals={false} hide={true} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      stroke="#10B981"
+                      strokeWidth={2}
+                      dot={{
+                        stroke: "#10B981",
+                        strokeWidth: 2,
+                        fill: "#fff",
+                        r: 3,
+                      }}
+                      activeDot={{
+                        stroke: "#059669",
+                        strokeWidth: 2,
+                        fill: "#10B981",
+                        r: 5,
+                      }}
+                      animationDuration={1500}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+                <div className="flex justify-center">
+                  <div className="mt-2 text-xs text-emerald-600 px-2 py-1 rounded hover:bg-emerald-50">
+                    {data.length > 5 && `+ ${data.length - 5} more dates`} Tap
+                    to expand
+                  </div>
+                </div>
               </div>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[90vw] w-[90vw] h-[80vh] bg-white p-0">
