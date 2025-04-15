@@ -40,7 +40,7 @@ export default function DashboardPage() {
         Admin Dashboard
       </h1>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         <div className="space-y-6 sm:space-y-8 w-full">
           <div className="actions-section">
             <h2 className="actions-title">Quick Actions</h2>
@@ -60,7 +60,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="stats-section">
+          <div className="stats-section lg:hidden">
             <h2 className="section-title mb-4">Quick Stats</h2>
             <KpiCards
               departments={departments.map((dept) => ({
@@ -72,28 +72,43 @@ export default function DashboardPage() {
               }))}
             />
           </div>
+
+          <div className="charts-section">
+            <div className="space-y-6 w-full">
+              <div>
+                <h2 className="chart-title">Task Completion by Department</h2>
+                <div className="chart-container">
+                  <CompletionBarChart
+                    departments={departments.map((dept) => ({
+                      id: dept.id,
+                      name: dept.name,
+                      progress: dept.progress,
+                    }))}
+                  />
+                </div>
+              </div>
+              <div>
+                <h2 className="chart-title">Tasks Completed Over Time</h2>
+                <div className="chart-container">
+                  <TasksLineChart checklistItems={flatChecklists} />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="charts-section">
-          <div className="space-y-6 w-full">
-            <div>
-              <h2 className="chart-title">Task Completion by Department</h2>
-              <div className="chart-container">
-                <CompletionBarChart
-                  departments={departments.map((dept) => ({
-                    id: dept.id,
-                    name: dept.name,
-                    progress: dept.progress,
-                  }))}
-                />
-              </div>
-            </div>
-            <div>
-              <h2 className="chart-title">Tasks Completed Over Time</h2>
-              <div className="chart-container">
-                <TasksLineChart checklistItems={flatChecklists} />
-              </div>
-            </div>
+        <div className="hidden lg:block">
+          <div className="stats-section">
+            <h2 className="section-title mb-4">Quick Stats</h2>
+            <KpiCards
+              departments={departments.map((dept) => ({
+                id: dept.id,
+                name: dept.name,
+                progress: dept.progress,
+                totalTasks: dept.totalTasks || 0,
+                overdueTasks: dept.overdueTasks || 0,
+              }))}
+            />
           </div>
         </div>
       </div>
