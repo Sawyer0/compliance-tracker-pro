@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { SupabaseClient } from "@supabase/supabase-js";
-import { getSupabaseClient } from "@/lib/getSupabaseClient";
+import { SupabaseClient, createClient } from "@supabase/supabase-js";
 
 export function useSupabase() {
   const [client, setClient] = useState<SupabaseClient | null>(null);
@@ -8,26 +7,41 @@ export function useSupabase() {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    async function initSupabase() {
+    async function initializeClient() {
       try {
-        setLoading(true);
-        const res = await fetch("/api/supabase-token");
+        console.log("Initializing Supabase client with token...");
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch Supabase token");
+        const tokenResponse = await fetch("/api/supabase-token");
+        if (!tokenResponse.ok) {
+          throw new Error(`Failed to fetch token: ${tokenResponse.status}`);
         }
 
-        const { token } = await res.json();
-        const supabaseClient = getSupabaseClient(token);
-        setClient(supabaseClient);
+        const { token } = await tokenResponse.json();
+        console.log("Token received:", !!token);
+
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          {
+            global: {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          }
+        );
+
+        console.log("Supabase client created with token");
+        setClient(supabase);
       } catch (err) {
-        setError(err instanceof Error ? err : new Error("Unknown error"));
+        console.error("Error initializing Supabase client:", err);
+        setError(err as Error);
       } finally {
         setLoading(false);
       }
     }
 
-    initSupabase();
+    initializeClient();
   }, []);
 
   return { client, loading, error };

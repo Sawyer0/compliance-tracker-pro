@@ -1,56 +1,66 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSupabase } from './useSupabase';
-import { fetchChecklists, updateChecklistItem } from '../services/checklist';
-import { ChecklistItem } from '@/types/checklist';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSupabase } from "./useSupabase";
+import { fetchChecklists, updateChecklistItem } from "../services/checklist";
+import { ChecklistItem } from "@/types/checklist";
 
 export function useChecklists(departmentId?: string) {
-  const { client } = useSupabase();
+  const { client, loading: clientLoading } = useSupabase();
   const queryClient = useQueryClient();
 
-  // Fetch checklists for a specific department
   const checklistsQuery = useQuery({
-    queryKey: ['checklists', departmentId],
+    queryKey: ["checklists", departmentId],
     queryFn: async () => {
-      if (!client) throw new Error('Supabase client not initialized');
-      
+      if (!client) throw new Error("Supabase client not initialized");
+
       if (departmentId) {
         const { data, error } = await client
-          .from('checklists')
-          .select('*')
-          .eq('department_id', departmentId);
-        
+          .from("checklists")
+          .select("*")
+          .eq("department_id", departmentId);
+
         if (error) throw error;
         return data;
       }
-      
-      // If no departmentId, fetch all checklists
+
       const { data, error } = await fetchChecklists(client);
       if (error) throw error;
       return data;
     },
-    enabled: !!client, // Only run the query when the Supabase client is available
+    enabled: !!client,
   });
 
-  // Update a checklist item
   const updateChecklistMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<ChecklistItem> }) => {
-      if (!client) throw new Error('Supabase client not initialized');
+    mutationFn: async ({
+      id,
+      updates,
+    }: {
+      id: string;
+      updates: Partial<ChecklistItem>;
+    }) => {
+      if (!client) throw new Error("Supabase client not initialized");
       const { data, error } = await updateChecklistItem(client, id, updates);
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating checklist item:", error);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
-      // Invalidate the checklists query to refetch data
-      queryClient.invalidateQueries({ queryKey: ['checklists', departmentId] });
+      queryClient.invalidateQueries({ queryKey: ["checklists", departmentId] });
+    },
+    onError: (error) => {
+      console.error("Error updating checklist:", error);
     },
   });
 
   return {
     checklists: checklistsQuery.data || [],
-    isLoading: checklistsQuery.isLoading,
+    isLoading:
+      clientLoading ||
+      (checklistsQuery.isLoading && checklistsQuery.fetchStatus !== "idle"),
     isError: checklistsQuery.isError,
     error: checklistsQuery.error,
     updateChecklist: updateChecklistMutation.mutate,
-    isUpdating: updateChecklistMutation.isPending
+    isUpdating: updateChecklistMutation.isPending,
   };
-} 
+}
