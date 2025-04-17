@@ -1,6 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSupabase } from "./useSupabase";
-import { fetchChecklists, updateChecklistItem } from "../services/checklist";
+import {
+  fetchChecklists,
+  updateChecklistItem,
+  createChecklistItem,
+} from "../services/checklist";
 import { ChecklistItem } from "@/types/checklist";
 
 export function useChecklists(departmentId?: string) {
@@ -47,9 +51,29 @@ export function useChecklists(departmentId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["checklists", departmentId] });
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
     },
     onError: (error) => {
       console.error("Error updating checklist:", error);
+    },
+  });
+
+  const createChecklistMutation = useMutation({
+    mutationFn: async (newItem: ChecklistItem) => {
+      if (!client) throw new Error("Supabase client not initialized");
+      const { data, error } = await createChecklistItem(client, newItem);
+      if (error) {
+        console.error("Error creating checklist item:", error);
+        throw error;
+      }
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["checklists"] });
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+    },
+    onError: (error) => {
+      console.error("Error creating checklist:", error);
     },
   });
 
@@ -61,6 +85,8 @@ export function useChecklists(departmentId?: string) {
     isError: checklistsQuery.isError,
     error: checklistsQuery.error,
     updateChecklist: updateChecklistMutation.mutate,
+    createChecklist: createChecklistMutation.mutate,
     isUpdating: updateChecklistMutation.isPending,
+    isCreating: createChecklistMutation.isPending,
   };
 }

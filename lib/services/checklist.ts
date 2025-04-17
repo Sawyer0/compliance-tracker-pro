@@ -16,6 +16,28 @@ export async function fetchChecklists(supabase: SupabaseClient) {
   }
 }
 
+export async function createChecklistItem(
+  supabase: SupabaseClient,
+  item: ChecklistItem
+) {
+  try {
+    const { data, error } = await supabase
+      .from("checklists")
+      .insert(item)
+      .select()
+      .single();
+
+    if (error) {
+      return { data: null, error };
+    }
+
+    return { data, error: null };
+  } catch (error) {
+    console.error("Error creating checklist item:", error);
+    return { data: null, error };
+  }
+}
+
 export async function updateChecklistItem(
   supabase: SupabaseClient,
   id: string,
