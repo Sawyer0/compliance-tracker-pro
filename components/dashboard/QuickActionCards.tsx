@@ -39,13 +39,18 @@ export default function QuickActionCards({
 }: QuickActionCardsProps) {
   const filteredCards = actionCards.filter((card) => card.variant === variant);
 
+  const handleCardClick = (title: string) => {
+    // TODO: Implement actual action based on card title
+    // This will be replaced with navigation or modal opening logic
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       {filteredCards.map((card, index) => (
         <div
           key={index}
           className="bg-white/70 backdrop-blur-sm rounded-xl border border-amber-100/50 shadow-sm hover:shadow-md transition-all cursor-pointer p-3 sm:p-4"
-          onClick={() => console.log(`Clicked: ${card.title}`)}
+          onClick={() => handleCardClick(card.title)}
         >
           <div className="flex items-center gap-3 sm:gap-4">
             <div className="bg-amber-100 text-amber-700 p-2.5 rounded-full flex items-center justify-center min-w-[40px]">
