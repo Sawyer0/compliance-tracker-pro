@@ -1,3 +1,9 @@
+export interface Tag {
+  id: string;
+  name: string;
+  color?: string;
+}
+
 export interface ChecklistItem {
   id: string;
   title: string;
@@ -7,6 +13,8 @@ export interface ChecklistItem {
   created_at: string;
   due_date: string;
   assigned_to?: string;
+  status?: string;
+  tags?: Tag[];
 }
 
 export interface Department {
