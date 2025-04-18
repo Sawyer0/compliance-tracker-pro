@@ -3,7 +3,9 @@
 import React, { useState } from "react";
 import { Building, ClipboardList, UserPlus, Settings } from "lucide-react";
 import CreateTaskModal from "@/components/compliance/CreateTaskModal";
+import { CreateDepartmentModal } from "@/components/departments";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 type QuickActionCardsProps = {
   variant?: "left" | "right";
@@ -40,7 +42,10 @@ export default function QuickActionCards({
   variant = "left",
 }: QuickActionCardsProps) {
   const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false);
+  const [isCreateDepartmentModalOpen, setIsCreateDepartmentModalOpen] =
+    useState(false);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const filteredCards = actionCards.filter((card) => card.variant === variant);
 
@@ -50,22 +55,23 @@ export default function QuickActionCards({
         setIsCreateTaskModalOpen(true);
         break;
       case "Create Department":
-        // TODO: Open create department modal
+        setIsCreateDepartmentModalOpen(true);
         break;
       case "Assign User":
         // TODO: Open assign user modal
         break;
       case "Manage Settings":
-        // TODO: Navigate to settings page
+        router.push("/settings/tags");
         break;
       default:
         console.log(`No action defined for ${title}`);
     }
   };
 
-  const handleTaskCreated = () => {
+  const handleDataChanged = () => {
     queryClient.invalidateQueries({ queryKey: ["departments"] });
     queryClient.invalidateQueries({ queryKey: ["checklists"] });
+    queryClient.invalidateQueries({ queryKey: ["allDepartments"] });
   };
 
   return (
@@ -96,7 +102,12 @@ export default function QuickActionCards({
       <CreateTaskModal
         isOpen={isCreateTaskModalOpen}
         onClose={() => setIsCreateTaskModalOpen(false)}
-        onSuccess={handleTaskCreated}
+        onSuccess={handleDataChanged}
+      />
+      <CreateDepartmentModal
+        isOpen={isCreateDepartmentModalOpen}
+        onClose={() => setIsCreateDepartmentModalOpen(false)}
+        onSuccess={handleDataChanged}
       />
     </>
   );

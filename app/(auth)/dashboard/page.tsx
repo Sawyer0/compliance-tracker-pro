@@ -1,15 +1,20 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import QuickActionCards from "@/components/dashboard/QuickActionCards";
 import KpiCards from "@/components/dashboard/KpiCards";
 import CompletionBarChart from "@/components/dashboard/CompletionBarChart";
 import TasksLineChart from "@/components/dashboard/TasksLineChart";
 import { useDepartments } from "@/lib/hooks/useDepartments";
 import { ChecklistItem, Department } from "@/types/checklist";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { CreateDepartmentModal } from "@/components/departments";
 
 export default function DashboardPage() {
   const { departments, isLoading, isError, error } = useDepartments();
+  const [isCreateDepartmentModalOpen, setIsCreateDepartmentModalOpen] =
+    useState(false);
 
   useEffect(() => {
     fetch("/api/assign-role", { method: "POST" });
@@ -36,9 +41,19 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6 sm:space-y-8">
-      <h1 className="text-xl sm:text-2xl font-bold mb-6 text-gray-800">
-        Admin Dashboard
-      </h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+          Admin Dashboard
+        </h1>
+
+        <Button
+          onClick={() => setIsCreateDepartmentModalOpen(true)}
+          className="flex items-center gap-1"
+        >
+          <Plus className="h-4 w-4" />
+          New Department
+        </Button>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         <div className="space-y-6 sm:space-y-8 w-full">
@@ -112,6 +127,11 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      <CreateDepartmentModal
+        isOpen={isCreateDepartmentModalOpen}
+        onClose={() => setIsCreateDepartmentModalOpen(false)}
+      />
     </div>
   );
 }
