@@ -1,13 +1,15 @@
-import { useChecklistStore } from "@/store/checklistStore";
+import React from 'react';
+import { useFilteredChecklistItems } from "@/store/checklistStore";
 import ChecklistItem from "./ChecklistItem";
+import { useTrackRender } from '@/lib/utils/performance';
+import { FixedSizeList } from 'react-window';
 
 export default function ChecklistTable() {
-  const { items, filterStatus } = useChecklistStore();
-  const filteredItems = items.filter((item) => {
-    if (filterStatus === "completed") return item.completed;
-    if (filterStatus === "pending") return !item.completed;
-    return true;
-  });
+  // Track renders in development
+  useTrackRender('ChecklistTable');
+  
+  // Use the selector that already handles filtering
+  const filteredItems = useFilteredChecklistItems();
 
   if (filteredItems.length === 0) {
     return (
@@ -17,11 +19,34 @@ export default function ChecklistTable() {
     );
   }
 
+  // For small lists, render normally
+  if (filteredItems.length < 20) {
+    return (
+      <ul className="list-spacing">
+        {filteredItems.map((item) => (
+          <ChecklistItem key={item.id} item={item} />
+        ))}
+      </ul>
+    );
+  }
+  
+  // For larger lists, use virtualization
+  const ItemRow = ({ index, style }: { index: number; style: React.CSSProperties }) => (
+    <div style={style}>
+      <ChecklistItem item={filteredItems[index]} />
+    </div>
+  );
+
   return (
-    <ul className="list-spacing">
-      {filteredItems.map((item) => (
-        <ChecklistItem key={item.id} item={item} />
-      ))}
-    </ul>
+    <div className="h-[400px] w-full">
+      <FixedSizeList
+        height={400}
+        width="100%"
+        itemCount={filteredItems.length}
+        itemSize={80} 
+      >
+        {ItemRow}
+      </FixedSizeList>
+    </div>
   );
 }

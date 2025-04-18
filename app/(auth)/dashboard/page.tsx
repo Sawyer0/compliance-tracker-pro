@@ -1,15 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import dynamic from "next/dynamic";
 import QuickActionCards from "@/components/dashboard/QuickActionCards";
 import KpiCards from "@/components/dashboard/KpiCards";
-import CompletionBarChart from "@/components/dashboard/CompletionBarChart";
-import TasksLineChart from "@/components/dashboard/TasksLineChart";
 import { useDepartments } from "@/lib/hooks/useDepartments";
 import { ChecklistItem, Department } from "@/types/checklist";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { CreateDepartmentModal } from "@/components/departments";
+
+// Dynamic imports for heavy components
+const CompletionBarChart = dynamic(
+  () => import("@/components/dashboard/CompletionBarChart"),
+  {
+    loading: () => (
+      <div className="loading-skeleton h-64 bg-gray-100 animate-pulse rounded-lg" />
+    ),
+    ssr: false,
+  }
+);
+
+const TasksLineChart = dynamic(
+  () => import("@/components/dashboard/TasksLineChart"),
+  {
+    loading: () => (
+      <div className="loading-skeleton h-64 bg-gray-100 animate-pulse rounded-lg" />
+    ),
+    ssr: false,
+  }
+);
+
+const CreateDepartmentModal = dynamic(
+  () =>
+    import("@/components/departments").then((mod) => mod.CreateDepartmentModal),
+  { ssr: false }
+);
 
 export default function DashboardPage() {
   const { departments, isLoading, isError, error } = useDepartments();
@@ -77,15 +102,21 @@ export default function DashboardPage() {
 
           <div className="stats-section lg:hidden">
             <h2 className="section-title mb-4">Quick Stats</h2>
-            <KpiCards
-              departments={departments.map((dept) => ({
-                id: dept.id,
-                name: dept.name,
-                progress: dept.progress,
-                totalTasks: dept.totalTasks || 0,
-                overdueTasks: dept.overdueTasks || 0,
-              }))}
-            />
+            <Suspense
+              fallback={
+                <div className="loading-skeleton h-48 bg-gray-100 animate-pulse rounded-lg" />
+              }
+            >
+              <KpiCards
+                departments={departments.map((dept) => ({
+                  id: dept.id,
+                  name: dept.name,
+                  progress: dept.progress,
+                  totalTasks: dept.totalTasks || 0,
+                  overdueTasks: dept.overdueTasks || 0,
+                }))}
+              />
+            </Suspense>
           </div>
 
           <div className="charts-section">
@@ -93,19 +124,31 @@ export default function DashboardPage() {
               <div>
                 <h2 className="chart-title">Task Completion by Department</h2>
                 <div className="chart-container">
-                  <CompletionBarChart
-                    departments={departments.map((dept) => ({
-                      id: dept.id,
-                      name: dept.name,
-                      progress: dept.progress,
-                    }))}
-                  />
+                  <Suspense
+                    fallback={
+                      <div className="loading-skeleton h-64 bg-gray-100 animate-pulse rounded-lg" />
+                    }
+                  >
+                    <CompletionBarChart
+                      departments={departments.map((dept) => ({
+                        id: dept.id,
+                        name: dept.name,
+                        progress: dept.progress,
+                      }))}
+                    />
+                  </Suspense>
                 </div>
               </div>
               <div>
                 <h2 className="chart-title">Tasks Completed Over Time</h2>
                 <div className="chart-container">
-                  <TasksLineChart checklistItems={flatChecklists} />
+                  <Suspense
+                    fallback={
+                      <div className="loading-skeleton h-64 bg-gray-100 animate-pulse rounded-lg" />
+                    }
+                  >
+                    <TasksLineChart checklistItems={flatChecklists} />
+                  </Suspense>
                 </div>
               </div>
             </div>
@@ -115,23 +158,31 @@ export default function DashboardPage() {
         <div className="hidden lg:block">
           <div className="stats-section">
             <h2 className="section-title mb-4">Quick Stats</h2>
-            <KpiCards
-              departments={departments.map((dept) => ({
-                id: dept.id,
-                name: dept.name,
-                progress: dept.progress,
-                totalTasks: dept.totalTasks || 0,
-                overdueTasks: dept.overdueTasks || 0,
-              }))}
-            />
+            <Suspense
+              fallback={
+                <div className="loading-skeleton h-48 bg-gray-100 animate-pulse rounded-lg" />
+              }
+            >
+              <KpiCards
+                departments={departments.map((dept) => ({
+                  id: dept.id,
+                  name: dept.name,
+                  progress: dept.progress,
+                  totalTasks: dept.totalTasks || 0,
+                  overdueTasks: dept.overdueTasks || 0,
+                }))}
+              />
+            </Suspense>
           </div>
         </div>
       </div>
 
-      <CreateDepartmentModal
-        isOpen={isCreateDepartmentModalOpen}
-        onClose={() => setIsCreateDepartmentModalOpen(false)}
-      />
+      {isCreateDepartmentModalOpen && (
+        <CreateDepartmentModal
+          isOpen={isCreateDepartmentModalOpen}
+          onClose={() => setIsCreateDepartmentModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

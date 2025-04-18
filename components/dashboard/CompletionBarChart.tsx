@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useMemo } from "react";
 import {
   Bar,
   BarChart,
@@ -19,13 +20,14 @@ import {
 } from "@/components/ui/dialog";
 import { Maximize2 } from "lucide-react";
 
+interface Department {
+  id: string;
+  name: string;
+  progress: number;
+}
 
 interface Props {
-  departments: {
-    id: string;
-    name: string;
-    progress: number;
-  }[];
+  departments: Department[];
 }
 
 const chartStyles = {
@@ -73,8 +75,8 @@ const chartStyles = {
   },
 };
 
-// Custom tooltip component for better styling
-const CustomTooltip = ({ active, payload, label }: any) => {
+// Custom tooltip component for better styling - memoized to prevent rerenders
+const CustomTooltip = React.memo(({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className={chartStyles.tooltip.container}>
@@ -89,17 +91,102 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     );
   }
   return null;
-};
+});
 
-export default function CompletionBarChart({ departments }: Props) {
-  const sortedDepartments = [...departments].sort(
-    (a, b) => b.progress - a.progress
+CustomTooltip.displayName = "CustomTooltip";
+
+// Memoized chart component for full view
+const FullBarChart = React.memo(({ data }: { data: Department[] }) => (
+  <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+    <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+      <CartesianGrid
+        strokeDasharray={chartStyles.chart.grid.strokeDasharray}
+        stroke={chartStyles.chart.grid.stroke}
+      />
+      <XAxis
+        dataKey="name"
+        tick={chartStyles.chart.axis.tick}
+        axisLine={chartStyles.chart.axis.line}
+        tickLine={chartStyles.chart.axis.line}
+        angle={-45}
+        textAnchor="end"
+        height={60}
+      />
+      <YAxis
+        domain={[0, 100]}
+        tick={chartStyles.chart.axis.tick}
+        axisLine={chartStyles.chart.axis.line}
+        tickLine={chartStyles.chart.axis.line}
+        tickFormatter={(value) => `${value}%`}
+      />
+      <Tooltip content={<CustomTooltip />} />
+      <Bar
+        dataKey="progress"
+        fill={chartStyles.chart.bar.fill}
+        radius={chartStyles.chart.bar.radius}
+        animationDuration={chartStyles.chart.bar.animationDuration}
+      />
+    </BarChart>
+  </ResponsiveContainer>
+));
+
+FullBarChart.displayName = "FullBarChart";
+
+// Memoized chart component for mobile view
+const MobileBarChart = React.memo(({ data }: { data: Department[] }) => (
+  <ResponsiveContainer width="100%" height={180} minHeight={180}>
+    <BarChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+      <XAxis
+        dataKey="name"
+        tick={{ ...chartStyles.chart.axis.tick, fontSize: 10 }}
+        axisLine={chartStyles.chart.axis.line}
+        tickLine={false}
+      />
+      <YAxis domain={[0, 100]} hide={true} />
+      <Tooltip content={<CustomTooltip />} />
+      <Bar
+        dataKey="progress"
+        fill={chartStyles.chart.bar.fill}
+        radius={chartStyles.chart.bar.radius}
+        animationDuration={chartStyles.chart.bar.animationDuration}
+      />
+    </BarChart>
+  </ResponsiveContainer>
+));
+
+MobileBarChart.displayName = "MobileBarChart";
+
+// Perform deep comparison of departments to prevent unnecessary rerenders
+function areDepartmentsEqual(prevProps: Props, nextProps: Props) {
+  if (prevProps.departments.length !== nextProps.departments.length) {
+    return false;
+  }
+
+  return prevProps.departments.every((prevDept, index) => {
+    const nextDept = nextProps.departments[index];
+    return (
+      prevDept.id === nextDept.id &&
+      prevDept.name === nextDept.name &&
+      prevDept.progress === nextDept.progress
+    );
+  });
+}
+
+function CompletionBarChartComponent({ departments }: Props) {
+  // Memoize sorted departments
+  const sortedDepartments = useMemo(
+    () => [...departments].sort((a, b) => b.progress - a.progress),
+    [departments]
   );
 
-  const topDepartments = sortedDepartments.slice(0, 4);
+  // Memoize top departments
+  const topDepartments = useMemo(
+    () => sortedDepartments.slice(0, 4),
+    [sortedDepartments]
+  );
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <CardTitle className="text-lg text-gray-800">
           Department Progress
@@ -122,48 +209,9 @@ export default function CompletionBarChart({ departments }: Props) {
             </DialogHeader>
             <div className={chartStyles.dialog.contentArea}>
               <div
-                className={
-                  chartStyles.container.minWidth +
-                  " " +
-                  chartStyles.container.fullHeight
-                }
+                className={`${chartStyles.container.minWidth} ${chartStyles.container.fullHeight}`}
               >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={departments}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray={chartStyles.chart.grid.strokeDasharray}
-                      stroke={chartStyles.chart.grid.stroke}
-                    />
-                    <XAxis
-                      dataKey="name"
-                      tick={chartStyles.chart.axis.tick}
-                      axisLine={chartStyles.chart.axis.line}
-                      tickLine={chartStyles.chart.axis.line}
-                      angle={-45}
-                      textAnchor="end"
-                      height={60}
-                    />
-                    <YAxis
-                      domain={[0, 100]}
-                      tick={chartStyles.chart.axis.tick}
-                      axisLine={chartStyles.chart.axis.line}
-                      tickLine={chartStyles.chart.axis.line}
-                      tickFormatter={(value) => `${value}%`}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar
-                      dataKey="progress"
-                      fill={chartStyles.chart.bar.fill}
-                      radius={chartStyles.chart.bar.radius}
-                      animationDuration={
-                        chartStyles.chart.bar.animationDuration
-                      }
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+                <FullBarChart data={departments} />
               </div>
             </div>
           </DialogContent>
@@ -174,30 +222,8 @@ export default function CompletionBarChart({ departments }: Props) {
         <div className="sm:hidden">
           <Dialog>
             <DialogTrigger className="w-full">
-              <div className="cursor-pointer">
-                <ResponsiveContainer width="100%" height={180}>
-                  <BarChart
-                    data={topDepartments}
-                    margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
-                  >
-                    <XAxis
-                      dataKey="name"
-                      tick={{ ...chartStyles.chart.axis.tick, fontSize: 10 }}
-                      axisLine={chartStyles.chart.axis.line}
-                      tickLine={false}
-                    />
-                    <YAxis domain={[0, 100]} hide={true} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar
-                      dataKey="progress"
-                      fill={chartStyles.chart.bar.fill}
-                      radius={chartStyles.chart.bar.radius}
-                      animationDuration={
-                        chartStyles.chart.bar.animationDuration
-                      }
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="cursor-pointer min-h-[180px]">
+                <MobileBarChart data={topDepartments} />
                 <div className="flex justify-center">
                   <div className={chartStyles.mobile.tapToExpand}>
                     {departments.length > 4 &&
@@ -215,89 +241,30 @@ export default function CompletionBarChart({ departments }: Props) {
               </DialogHeader>
               <div className={chartStyles.dialog.contentArea}>
                 <div
-                  className={
-                    chartStyles.container.minWidth +
-                    " " +
-                    chartStyles.container.fullHeight
-                  }
+                  className={`${chartStyles.container.minWidth} ${chartStyles.container.fullHeight}`}
                 >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={departments}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-                    >
-                      <CartesianGrid
-                        strokeDasharray={chartStyles.chart.grid.strokeDasharray}
-                        stroke={chartStyles.chart.grid.stroke}
-                      />
-                      <XAxis
-                        dataKey="name"
-                        tick={chartStyles.chart.axis.tick}
-                        axisLine={chartStyles.chart.axis.line}
-                        tickLine={chartStyles.chart.axis.line}
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                      />
-                      <YAxis
-                        domain={[0, 100]}
-                        tick={chartStyles.chart.axis.tick}
-                        axisLine={chartStyles.chart.axis.line}
-                        tickLine={chartStyles.chart.axis.line}
-                        tickFormatter={(value) => `${value}%`}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Bar
-                        dataKey="progress"
-                        fill={chartStyles.chart.bar.fill}
-                        radius={chartStyles.chart.bar.radius}
-                        animationDuration={
-                          chartStyles.chart.bar.animationDuration
-                        }
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <FullBarChart data={departments} />
                 </div>
               </div>
             </DialogContent>
           </Dialog>
         </div>
 
-        {/* Desktop view (hidden on small screens) */}
+        {/* Desktop view (hidden on mobile) */}
         <div className="hidden sm:block">
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart
-              data={departments}
-              margin={{ top: 10, right: 10, left: 0, bottom: 20 }}
-            >
-              <CartesianGrid
-                strokeDasharray={chartStyles.chart.grid.strokeDasharray}
-                stroke={chartStyles.chart.grid.stroke}
-              />
-              <XAxis
-                dataKey="name"
-                tick={chartStyles.chart.axis.tick}
-                axisLine={chartStyles.chart.axis.line}
-                tickLine={chartStyles.chart.axis.line}
-              />
-              <YAxis
-                domain={[0, 100]}
-                tick={chartStyles.chart.axis.tick}
-                axisLine={chartStyles.chart.axis.line}
-                tickLine={chartStyles.chart.axis.line}
-                tickFormatter={(value) => `${value}%`}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar
-                dataKey="progress"
-                fill={chartStyles.chart.bar.fill}
-                radius={chartStyles.chart.bar.radius}
-                animationDuration={chartStyles.chart.bar.animationDuration}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="h-[300px] min-h-[260px] w-full">
+            <FullBarChart data={topDepartments} />
+            {departments.length > 4 && (
+              <div className="text-right text-sm text-gray-500 mt-1">
+                Showing top 4 of {departments.length} departments
+              </div>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
   );
 }
+
+// Export the memoized component
+export default React.memo(CompletionBarChartComponent, areDepartmentsEqual);

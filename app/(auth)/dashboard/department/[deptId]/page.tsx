@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useChecklistStore } from "@/store/checklistStore";
+import {
+  useChecklistStore,
+  useChecklistFilterStatus,
+} from "@/store/checklistStore";
 import { ChecklistTable } from "@/components/compliance";
 import { useChecklists } from "@/lib/hooks/useChecklists";
 import { ChecklistItem } from "@/types/checklist";
@@ -10,28 +13,40 @@ import { ChecklistItem } from "@/types/checklist";
 export default function DepartmentChecklistPage() {
   const router = useRouter();
   const { deptId } = useParams();
-  const { setFilterStatus, filterStatus } = useChecklistStore();
+
+  // Use selectors instead of accessing the full store state
+  const filterStatus = useChecklistFilterStatus();
+  const setFilterStatus = useChecklistStore((state) => state.setFilterStatus);
+
   const [completionRate, setCompletionRate] = useState(0);
 
   const { checklists, isLoading, isError, error, updateChecklist } =
     useChecklists(deptId as string);
 
+  // Only set items when they actually change
   useEffect(() => {
-    if (checklists) {
-      useChecklistStore.getState().setItems(checklists);
+    if (checklists && checklists.length > 0) {
+      // Use getState to access the store outside of renders
+      const setItems = useChecklistStore.getState().setItems;
+      setItems(checklists);
     }
   }, [checklists]);
 
+  // Memoize the completion rate calculation
   useEffect(() => {
-    setCompletionRate(
-      checklists.length > 0
-        ? Math.round(
-            (checklists.filter((i: ChecklistItem) => i.completed).length /
-              checklists.length) *
-              100
-          )
-        : 0
+    if (!checklists || checklists.length === 0) {
+      setCompletionRate(0);
+      return;
+    }
+
+    const completedCount = checklists.filter(
+      (item: ChecklistItem) => item.completed
+    ).length;
+    const newCompletionRate = Math.round(
+      (completedCount / checklists.length) * 100
     );
+
+    setCompletionRate(newCompletionRate);
   }, [checklists]);
 
   if (isLoading) {

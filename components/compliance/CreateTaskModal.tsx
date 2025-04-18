@@ -23,6 +23,8 @@ interface Props {
   onSuccess?: () => void;
 }
 
+export const dynamic = "force-dynamic";
+
 export default function CreateTaskModal({ isOpen, onClose, onSuccess }: Props) {
   const {
     formData,
