@@ -1,6 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSupabase } from "./useSupabase";
-import { fetchTags, createTag, assignTagsToChecklist } from "../services/tags";
+import {
+  fetchTags,
+  createTag,
+  assignTagsToChecklist,
+  deleteTag,
+} from "../services/tags";
 import { Tag } from "@/types/checklist";
 
 export function useTags() {
@@ -27,6 +32,20 @@ export function useTags() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tags"] });
+    },
+  });
+
+  const deleteTagMutation = useMutation({
+    mutationFn: async (tagId: string) => {
+      if (!client) throw new Error("Supabase client not initialized");
+      const { data, error } = await deleteTag(client, tagId);
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
+
+      queryClient.invalidateQueries({ queryKey: ["checklists"] });
     },
   });
 
@@ -61,8 +80,10 @@ export function useTags() {
     isError: tagsQuery.isError,
     error: tagsQuery.error,
     createTag: createTagMutation.mutate,
+    deleteTag: deleteTagMutation.mutate,
     assignTags: assignTagsMutation.mutate,
     isCreating: createTagMutation.isPending,
+    isDeleting: deleteTagMutation.isPending,
     isAssigning: assignTagsMutation.isPending,
   };
 }

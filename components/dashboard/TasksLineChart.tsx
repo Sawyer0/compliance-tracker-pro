@@ -18,8 +18,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Maximize2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ChecklistItem {
   id: string;
@@ -31,14 +31,81 @@ interface Props {
   checklistItems: ChecklistItem[];
 }
 
+const chartStyles = {
+  container: {
+    fullHeight: "h-full",
+    minWidth: "min-w-[800px]",
+  },
+  chart: {
+    line: {
+      stroke: "#10B981",
+      strokeWidth: 2,
+      dot: {
+        stroke: "#10B981",
+        strokeWidth: 2,
+        fill: "#fff",
+        radius: 4,
+      },
+      activeDot: {
+        stroke: "#059669",
+        strokeWidth: 2,
+        fill: "#10B981",
+        radius: 6,
+      },
+      animationDuration: 1500,
+    },
+    grid: {
+      stroke: "#f0f0f0",
+      strokeDasharray: "3 3",
+    },
+    axis: {
+      tick: {
+        fill: "#6B7280",
+        fontSize: 12,
+      },
+      line: {
+        stroke: "#E5E7EB",
+      },
+    },
+  },
+  tooltip: {
+    container: cn("bg-white p-3 border border-gray-200 shadow rounded-md"),
+    label: cn("font-medium text-gray-800"),
+    value: "text-emerald-600",
+    valueHighlight: "font-bold",
+  },
+  dialog: {
+    trigger: cn(
+      "hidden sm:flex items-center justify-center h-8 w-8",
+      "rounded-md",
+      "border border-gray-200 hover:bg-gray-50 cursor-pointer",
+      "transition-all duration-150"
+    ),
+    content: "sm:max-w-[90vw] w-[90vw] h-[80vh] bg-white p-0",
+    header: "p-4 border-b",
+    title: cn("text-xl"),
+    contentArea: "p-4 h-[calc(100%-60px)] bg-white overflow-auto",
+  },
+  mobile: {
+    tapToExpand: cn(
+      "mt-2",
+      "text-xs",
+      "text-emerald-600 px-2 py-1 rounded hover:bg-emerald-50"
+    ),
+  },
+};
+
 // Custom tooltip component for better styling
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-3 border border-gray-200 shadow-md rounded-md">
-        <p className="font-medium text-gray-800">{label}</p>
-        <p className="text-emerald-600">
-          Tasks Completed: <span className="font-bold">{payload[0].value}</span>
+      <div className={chartStyles.tooltip.container}>
+        <p className={chartStyles.tooltip.label}>{label}</p>
+        <p className={chartStyles.tooltip.value}>
+          Tasks Completed:{" "}
+          <span className={chartStyles.tooltip.valueHighlight}>
+            {payload[0].value}
+          </span>
         </p>
       </div>
     );
@@ -69,44 +136,53 @@ export default function TasksLineChart({ checklistItems }: Props) {
   return (
     <Card>
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
-        <CardTitle className="text-lg text-gray-800">
+        <CardTitle className={cn("text-lg", "text-gray-800")}>
           Task Completion Trend
         </CardTitle>
 
         <Dialog>
           <DialogTrigger asChild>
             <div
-              className="hidden sm:flex items-center justify-center h-8 w-8 rounded-md border border-gray-200 hover:bg-gray-50 cursor-pointer"
+              className={chartStyles.dialog.trigger}
               aria-label="Expand chart"
             >
               <Maximize2 className="h-4 w-4" />
             </div>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[90vw] w-[90vw] h-[80vh] bg-white p-0">
-            <DialogHeader className="p-4 border-b">
-              <DialogTitle className="text-xl">
+          <DialogContent className={chartStyles.dialog.content}>
+            <DialogHeader className={chartStyles.dialog.header}>
+              <DialogTitle className={chartStyles.dialog.title}>
                 Tasks Completed Over Time
               </DialogTitle>
             </DialogHeader>
-            <div className="p-4 h-[calc(100%-60px)] bg-white overflow-auto">
-              <div className="min-w-[800px] h-full">
+            <div className={chartStyles.dialog.contentArea}>
+              <div
+                className={
+                  chartStyles.container.minWidth +
+                  " " +
+                  chartStyles.container.fullHeight
+                }
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={data}
                     margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <CartesianGrid
+                      strokeDasharray={chartStyles.chart.grid.strokeDasharray}
+                      stroke={chartStyles.chart.grid.stroke}
+                    />
                     <XAxis
                       dataKey="date"
-                      tick={{ fill: "#6B7280", fontSize: 12 }}
-                      axisLine={{ stroke: "#E5E7EB" }}
-                      tickLine={{ stroke: "#E5E7EB" }}
+                      tick={chartStyles.chart.axis.tick}
+                      axisLine={chartStyles.chart.axis.line}
+                      tickLine={chartStyles.chart.axis.line}
                     />
                     <YAxis
                       allowDecimals={false}
-                      tick={{ fill: "#6B7280", fontSize: 12 }}
-                      axisLine={{ stroke: "#E5E7EB" }}
-                      tickLine={{ stroke: "#E5E7EB" }}
+                      tick={chartStyles.chart.axis.tick}
+                      axisLine={chartStyles.chart.axis.line}
+                      tickLine={chartStyles.chart.axis.line}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend wrapperStyle={{ paddingTop: "10px" }} />
@@ -114,21 +190,24 @@ export default function TasksLineChart({ checklistItems }: Props) {
                       name="Completed Tasks"
                       type="monotone"
                       dataKey="count"
-                      stroke="#10B981"
-                      strokeWidth={2}
+                      stroke={chartStyles.chart.line.stroke}
+                      strokeWidth={chartStyles.chart.line.strokeWidth}
                       dot={{
-                        stroke: "#10B981",
-                        strokeWidth: 2,
-                        fill: "#fff",
-                        r: 4,
+                        stroke: chartStyles.chart.line.dot.stroke,
+                        strokeWidth: chartStyles.chart.line.dot.strokeWidth,
+                        fill: chartStyles.chart.line.dot.fill,
+                        r: chartStyles.chart.line.dot.radius,
                       }}
                       activeDot={{
-                        stroke: "#059669",
-                        strokeWidth: 2,
-                        fill: "#10B981",
-                        r: 6,
+                        stroke: chartStyles.chart.line.activeDot.stroke,
+                        strokeWidth:
+                          chartStyles.chart.line.activeDot.strokeWidth,
+                        fill: chartStyles.chart.line.activeDot.fill,
+                        r: chartStyles.chart.line.activeDot.radius,
                       }}
-                      animationDuration={1500}
+                      animationDuration={
+                        chartStyles.chart.line.animationDuration
+                      }
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -150,8 +229,8 @@ export default function TasksLineChart({ checklistItems }: Props) {
                   >
                     <XAxis
                       dataKey="date"
-                      tick={{ fill: "#6B7280", fontSize: 10 }}
-                      axisLine={{ stroke: "#E5E7EB" }}
+                      tick={{ ...chartStyles.chart.axis.tick, fontSize: 10 }}
+                      axisLine={chartStyles.chart.axis.line}
                       tickLine={false}
                       tickFormatter={(value) =>
                         value.split("/").slice(0, 2).join("/")
@@ -162,57 +241,69 @@ export default function TasksLineChart({ checklistItems }: Props) {
                     <Line
                       type="monotone"
                       dataKey="count"
-                      stroke="#10B981"
-                      strokeWidth={2}
+                      stroke={chartStyles.chart.line.stroke}
+                      strokeWidth={chartStyles.chart.line.strokeWidth}
                       dot={{
-                        stroke: "#10B981",
-                        strokeWidth: 2,
-                        fill: "#fff",
+                        stroke: chartStyles.chart.line.dot.stroke,
+                        strokeWidth: chartStyles.chart.line.dot.strokeWidth,
+                        fill: chartStyles.chart.line.dot.fill,
                         r: 3,
                       }}
                       activeDot={{
-                        stroke: "#059669",
-                        strokeWidth: 2,
-                        fill: "#10B981",
+                        stroke: chartStyles.chart.line.activeDot.stroke,
+                        strokeWidth:
+                          chartStyles.chart.line.activeDot.strokeWidth,
+                        fill: chartStyles.chart.line.activeDot.fill,
                         r: 5,
                       }}
-                      animationDuration={1500}
+                      animationDuration={
+                        chartStyles.chart.line.animationDuration
+                      }
                     />
                   </LineChart>
                 </ResponsiveContainer>
                 <div className="flex justify-center">
-                  <div className="mt-2 text-xs text-emerald-600 px-2 py-1 rounded hover:bg-emerald-50">
+                  <div className={chartStyles.mobile.tapToExpand}>
                     {data.length > 5 && `+ ${data.length - 5} more dates`} Tap
                     to expand
                   </div>
                 </div>
               </div>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[90vw] w-[90vw] h-[80vh] bg-white p-0">
-              <DialogHeader className="p-4 border-b">
-                <DialogTitle className="text-xl">
+            <DialogContent className={chartStyles.dialog.content}>
+              <DialogHeader className={chartStyles.dialog.header}>
+                <DialogTitle className={chartStyles.dialog.title}>
                   Tasks Completed Over Time
                 </DialogTitle>
               </DialogHeader>
-              <div className="p-4 h-[calc(100%-60px)] bg-white overflow-auto">
-                <div className="min-w-[800px] h-full">
+              <div className={chartStyles.dialog.contentArea}>
+                <div
+                  className={
+                    chartStyles.container.minWidth +
+                    " " +
+                    chartStyles.container.fullHeight
+                  }
+                >
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={data}
                       margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <CartesianGrid
+                        strokeDasharray={chartStyles.chart.grid.strokeDasharray}
+                        stroke={chartStyles.chart.grid.stroke}
+                      />
                       <XAxis
                         dataKey="date"
-                        tick={{ fill: "#6B7280", fontSize: 12 }}
-                        axisLine={{ stroke: "#E5E7EB" }}
-                        tickLine={{ stroke: "#E5E7EB" }}
+                        tick={chartStyles.chart.axis.tick}
+                        axisLine={chartStyles.chart.axis.line}
+                        tickLine={chartStyles.chart.axis.line}
                       />
                       <YAxis
                         allowDecimals={false}
-                        tick={{ fill: "#6B7280", fontSize: 12 }}
-                        axisLine={{ stroke: "#E5E7EB" }}
-                        tickLine={{ stroke: "#E5E7EB" }}
+                        tick={chartStyles.chart.axis.tick}
+                        axisLine={chartStyles.chart.axis.line}
+                        tickLine={chartStyles.chart.axis.line}
                       />
                       <Tooltip content={<CustomTooltip />} />
                       <Legend wrapperStyle={{ paddingTop: "10px" }} />
@@ -220,21 +311,24 @@ export default function TasksLineChart({ checklistItems }: Props) {
                         name="Completed Tasks"
                         type="monotone"
                         dataKey="count"
-                        stroke="#10B981"
-                        strokeWidth={2}
+                        stroke={chartStyles.chart.line.stroke}
+                        strokeWidth={chartStyles.chart.line.strokeWidth}
                         dot={{
-                          stroke: "#10B981",
-                          strokeWidth: 2,
-                          fill: "#fff",
-                          r: 4,
+                          stroke: chartStyles.chart.line.dot.stroke,
+                          strokeWidth: chartStyles.chart.line.dot.strokeWidth,
+                          fill: chartStyles.chart.line.dot.fill,
+                          r: chartStyles.chart.line.dot.radius,
                         }}
                         activeDot={{
-                          stroke: "#059669",
-                          strokeWidth: 2,
-                          fill: "#10B981",
-                          r: 6,
+                          stroke: chartStyles.chart.line.activeDot.stroke,
+                          strokeWidth:
+                            chartStyles.chart.line.activeDot.strokeWidth,
+                          fill: chartStyles.chart.line.activeDot.fill,
+                          r: chartStyles.chart.line.activeDot.radius,
                         }}
-                        animationDuration={1500}
+                        animationDuration={
+                          chartStyles.chart.line.animationDuration
+                        }
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -251,18 +345,21 @@ export default function TasksLineChart({ checklistItems }: Props) {
               data={data}
               margin={{ top: 10, right: 10, left: 0, bottom: 20 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <CartesianGrid
+                strokeDasharray={chartStyles.chart.grid.strokeDasharray}
+                stroke={chartStyles.chart.grid.stroke}
+              />
               <XAxis
                 dataKey="date"
-                tick={{ fill: "#6B7280", fontSize: 12 }}
-                axisLine={{ stroke: "#E5E7EB" }}
-                tickLine={{ stroke: "#E5E7EB" }}
+                tick={chartStyles.chart.axis.tick}
+                axisLine={chartStyles.chart.axis.line}
+                tickLine={chartStyles.chart.axis.line}
               />
               <YAxis
                 allowDecimals={false}
-                tick={{ fill: "#6B7280", fontSize: 12 }}
-                axisLine={{ stroke: "#E5E7EB" }}
-                tickLine={{ stroke: "#E5E7EB" }}
+                tick={chartStyles.chart.axis.tick}
+                axisLine={chartStyles.chart.axis.line}
+                tickLine={chartStyles.chart.axis.line}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ paddingTop: "10px" }} />
@@ -270,16 +367,21 @@ export default function TasksLineChart({ checklistItems }: Props) {
                 name="Completed Tasks"
                 type="monotone"
                 dataKey="count"
-                stroke="#10B981"
-                strokeWidth={2}
-                dot={{ stroke: "#10B981", strokeWidth: 2, fill: "#fff", r: 4 }}
-                activeDot={{
-                  stroke: "#059669",
-                  strokeWidth: 2,
-                  fill: "#10B981",
-                  r: 6,
+                stroke={chartStyles.chart.line.stroke}
+                strokeWidth={chartStyles.chart.line.strokeWidth}
+                dot={{
+                  stroke: chartStyles.chart.line.dot.stroke,
+                  strokeWidth: chartStyles.chart.line.dot.strokeWidth,
+                  fill: chartStyles.chart.line.dot.fill,
+                  r: chartStyles.chart.line.dot.radius,
                 }}
-                animationDuration={1500}
+                activeDot={{
+                  stroke: chartStyles.chart.line.activeDot.stroke,
+                  strokeWidth: chartStyles.chart.line.activeDot.strokeWidth,
+                  fill: chartStyles.chart.line.activeDot.fill,
+                  r: chartStyles.chart.line.activeDot.radius,
+                }}
+                animationDuration={chartStyles.chart.line.animationDuration}
               />
             </LineChart>
           </ResponsiveContainer>

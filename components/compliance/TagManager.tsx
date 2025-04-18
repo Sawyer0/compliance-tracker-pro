@@ -1,88 +1,155 @@
 import React, { useState } from "react";
-import { useTags } from "@/lib/hooks/useTags";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { PlusCircle, TagIcon, XCircle } from "lucide-react";
+import { Tag, TagColor } from "@/components/ui/tag";
+import { Input } from "@/components/ui/form-field";
 
-const COLORS = [
-  { name: "blue", bg: "bg-blue-100", text: "text-blue-800" },
-  { name: "red", bg: "bg-red-100", text: "text-red-800" },
-  { name: "green", bg: "bg-green-100", text: "text-green-800" },
-  { name: "amber", bg: "bg-amber-100", text: "text-amber-800" },
-  { name: "purple", bg: "bg-purple-100", text: "text-purple-800" },
+import { Card } from "@/components/ui/card";
+
+const COLOR_OPTIONS: { label: string; value: TagColor }[] = [
+  { label: "Blue", value: "blue" },
+  { label: "Red", value: "red" },
+  { label: "Green", value: "green" },
+  { label: "Amber", value: "amber" },
+  { label: "Purple", value: "purple" },
 ];
 
-export default function TagManager() {
-  const { tags, createTag, isCreating } = useTags();
+export interface TagManagerProps {
+  existingTags: Array<{ id: string; name: string; color: TagColor }>;
+  onCreateTag: (name: string, color: TagColor) => Promise<void>;
+  onDeleteTag?: (id: string) => Promise<void>;
+  className?: string;
+}
+
+export function TagManager({
+  existingTags = [],
+  onCreateTag,
+  onDeleteTag,
+  className,
+}: TagManagerProps) {
   const [newTagName, setNewTagName] = useState("");
-  const [selectedColor, setSelectedColor] = useState("blue");
+  const [selectedColor, setSelectedColor] = useState<TagColor>("blue");
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleCreateTag = () => {
-    if (!newTagName.trim()) return;
+  const handleCreateTag = async () => {
+    if (!newTagName.trim()) {
+      setError("Tag name cannot be empty");
+      return;
+    }
 
-    createTag({
-      name: newTagName.trim(),
-      color: selectedColor,
-    });
+    if (
+      existingTags.some(
+        (tag) => tag.name.toLowerCase() === newTagName.trim().toLowerCase()
+      )
+    ) {
+      setError("A tag with this name already exists");
+      return;
+    }
 
-    setNewTagName("");
+    setIsCreating(true);
+    setError(null);
+
+    try {
+      await onCreateTag(newTagName.trim(), selectedColor);
+
+      setNewTagName("");
+      setSelectedColor("blue");
+    } catch (err) {
+      setError("Failed to create tag");
+      console.error("Error creating tag:", err);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleDeleteTag = async (id: string) => {
+    if (!onDeleteTag) return;
+
+    try {
+      await onDeleteTag(id);
+    } catch (err) {
+      console.error("Error deleting tag:", err);
+    }
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-medium">Manage Tags</h3>
+    <Card className={className}>
+      <div className="p-4">
+        <div className="flex items-center mb-4">
+          <TagIcon className="mr-2 h-5 w-5 text-neutral-600" />
+          <h3 className="text-lg font-medium">Manage Tags</h3>
+        </div>
 
-      <div className="flex flex-wrap gap-2 mb-4">
-        {tags.map((tag) => (
-          <div
-            key={tag.id}
-            className={`px-3 py-1 rounded-full bg-${
-              tag.color || "blue"
-            }-100 text-${tag.color || "blue"}-800`}
+        <div className="space-y-4 mb-6">
+          <div>
+            <Input
+              placeholder="Enter tag name"
+              value={newTagName}
+              onChange={(e) => setNewTagName(e.target.value)}
+              className="w-full mb-2"
+            />
+            {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
+              Tag Color
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {COLOR_OPTIONS.map((colorOption) => (
+                <Tag
+                  key={colorOption.value}
+                  color={colorOption.value}
+                  label={colorOption.label}
+                  selected={selectedColor === colorOption.value}
+                  onSelect={() => setSelectedColor(colorOption.value)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <Button
+            onClick={handleCreateTag}
+            disabled={isCreating || !newTagName.trim()}
+            className="w-full"
           >
-            {tag.name}
-          </div>
-        ))}
-      </div>
-
-      <div className="flex items-end gap-2">
-        <div>
-          <label className="text-sm font-medium block mb-1">Tag Name</label>
-          <input
-            type="text"
-            value={newTagName}
-            onChange={(e) => setNewTagName(e.target.value)}
-            className="px-3 py-2 border rounded-md"
-            placeholder="Enter tag name"
-          />
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Create Tag
+          </Button>
         </div>
 
-        <div>
-          <label className="text-sm font-medium block mb-1">Color</label>
-          <div className="flex gap-1">
-            {COLORS.map((color) => (
-              <button
-                key={color.name}
-                type="button"
-                className={`w-6 h-6 rounded-full ${color.bg} ${
-                  selectedColor === color.name
-                    ? "ring-2 ring-offset-1 ring-gray-500"
-                    : ""
-                }`}
-                onClick={() => setSelectedColor(color.name)}
-              />
-            ))}
-          </div>
-        </div>
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-neutral-700">
+            Existing Tags
+          </h4>
 
-        <Button
-          onClick={handleCreateTag}
-          disabled={isCreating || !newTagName.trim()}
-          className="flex items-center gap-1"
-        >
-          <Plus className="w-4 h-4" />
-          Add Tag
-        </Button>
+          {existingTags.length === 0 ? (
+            <p className="text-sm text-neutral-500">No tags created yet</p>
+          ) : (
+            <div className="space-y-2">
+              {existingTags.map((tag) => (
+                <div
+                  key={tag.id}
+                  className="flex items-center justify-between bg-neutral-50 rounded p-2"
+                >
+                  <Tag color={tag.color} label={tag.name} />
+
+                  {onDeleteTag && (
+                    <button
+                      onClick={() => handleDeleteTag(tag.id)}
+                      className="text-neutral-400 hover:text-red-500 transition-colors"
+                      aria-label={`Delete ${tag.name} tag`}
+                    >
+                      <XCircle className="h-5 w-5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </Card>
   );
 }

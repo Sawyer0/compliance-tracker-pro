@@ -42,23 +42,6 @@ body {
   @apply space-y-3;
 }
 
-/* Layout */
-.layout-wrapper {
-  @apply flex flex-col sm:flex-row min-h-screen;
-}
-
-.layout-sidebar {
-  @apply w-[250px] max-w-sm border-r border-gray-200 shadow-sm;
-}
-
-.layout-main {
-  @apply w-full flex-1 flex flex-col;
-}
-
-.layout-content {
-  @apply flex-1 overflow-auto p-4 sm:p-6 pt-14 sm:pt-6;
-}
-
 /* Page */
 .page-wrapper {
   @apply p-4 space-y-4;

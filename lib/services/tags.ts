@@ -28,6 +28,32 @@ export async function createTag(
   }
 }
 
+export async function deleteTag(
+  supabase: SupabaseClient,
+  tagId: string
+) {
+  try {
+    // First remove all associations in the junction table
+    await supabase
+      .from("checklist_tags")
+      .delete()
+      .eq("tag_id", tagId);
+      
+    // Then delete the tag itself
+    const { data, error } = await supabase
+      .from("tags")
+      .delete()
+      .eq("id", tagId)
+      .select()
+      .single();
+      
+    return { data, error };
+  } catch (error) {
+    console.error("Error deleting tag:", error);
+    return { data: null, error };
+  }
+}
+
 export async function assignTagsToChecklist(
   supabase: SupabaseClient,
   checklistId: string,

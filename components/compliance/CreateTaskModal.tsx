@@ -65,9 +65,9 @@ export default function CreateTaskModal({ isOpen, onClose, onSuccess }: Props) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-white">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
+          <DialogTitle className="text-xl font-bold text-gray-800">
             Create New Task
           </DialogTitle>
           <div className="flex space-x-1 mt-4 border-b">
@@ -78,6 +78,7 @@ export default function CreateTaskModal({ isOpen, onClose, onSuccess }: Props) {
                   : "text-gray-500"
               }`}
               onClick={() => setActiveTab("details")}
+              type="button"
             >
               Task Details
             </button>
@@ -88,6 +89,7 @@ export default function CreateTaskModal({ isOpen, onClose, onSuccess }: Props) {
                   : "text-gray-500"
               }`}
               onClick={() => setActiveTab("assignment")}
+              type="button"
             >
               Assignment
             </button>
@@ -136,7 +138,7 @@ export default function CreateTaskModal({ isOpen, onClose, onSuccess }: Props) {
               selectedDepartment={selectedDepartment}
             />
 
-            <DialogFooter>
+            <DialogFooter className="mt-6 flex justify-end gap-2">
               <Button
                 type="button"
                 onClick={onClose}

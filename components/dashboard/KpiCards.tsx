@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge";
+
+import {
+  Clock,
+  ArrowDown,
+  ArrowUp,
+  CheckCircle,
+  ListChecks,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { theme} from "@/lib/theme";
+
 
 interface KpiCardsProps {
   departments: {
@@ -11,6 +21,49 @@ interface KpiCardsProps {
   }[];
 }
 
+const TrendIndicator = ({
+  current,
+  previous,
+}: {
+  current: number;
+  previous: number;
+}) => {
+  const difference = current - previous;
+  if (difference === 0) return null;
+
+  if (difference > 0) {
+    return (
+      <div className="flex items-center text-emerald-500">
+        <ArrowUp className="h-4 w-4 mr-1" />
+        <span className={`text-xs`}>+{difference.toFixed(1)}%</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center text-rose-500">
+      <ArrowDown className="h-4 w-4 mr-1" />
+      <span className={`text-xs`}>{difference.toFixed(1)}%</span>
+    </div>
+  );
+};
+
+const kpiCardStyles = {
+  container: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4",
+  card: `${theme.rounded.lg} border-gray-200 hover:border-gray-300 ${theme.transitions.default}`,
+  cardHeader: "pb-2 space-y-0",
+  cardTitle: `text-sm font-medium text-gray-500`,
+  cardContent: "space-y-2",
+  value: `text-2xl font-bold text-gray-900`,
+  icon: {
+    base: "p-2 rounded-full",
+    tasks: "bg-indigo-100 text-indigo-600",
+    completed: "bg-emerald-100 text-emerald-600",
+    overdue: "bg-rose-100 text-rose-600",
+    rate: "bg-amber-100 text-amber-600",
+  },
+};
+
 export default function KpiCards({ departments }: KpiCardsProps) {
   const totalTasks = departments.reduce((sum, d) => sum + d.totalTasks, 0);
   const completedTasks = Math.round(
@@ -21,7 +74,6 @@ export default function KpiCards({ departments }: KpiCardsProps) {
   const percentComplete =
     totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-  // State for counter animation
   const [counts, setCounts] = useState({
     total: 0,
     percent: 0,
@@ -30,7 +82,6 @@ export default function KpiCards({ departments }: KpiCardsProps) {
   });
 
   useEffect(() => {
-    // Animation duration in ms
     const duration = 1500;
     const steps = 30;
     const interval = duration / steps;
@@ -63,42 +114,77 @@ export default function KpiCards({ departments }: KpiCardsProps) {
   }, [totalTasks, percentComplete, overdueTasks, departments.length]);
 
   return (
-    <div className="kpi-cards">
-      <div className="stat-container">
-        <div className="stat-title">TOTAL TASKS</div>
-        <div className="stat-value text-indigo-900">{counts.total}</div>
-      </div>
+    <div className={kpiCardStyles.container}>
+      <Card className={kpiCardStyles.card}>
+        <CardHeader className={kpiCardStyles.cardHeader}>
+          <CardTitle className={kpiCardStyles.cardTitle}>Total Tasks</CardTitle>
+        </CardHeader>
+        <CardContent className={kpiCardStyles.cardContent}>
+          <div className="flex items-center justify-between">
+            <span className={kpiCardStyles.value}>{totalTasks}</span>
+            <div
+              className={`${kpiCardStyles.icon.base} ${kpiCardStyles.icon.tasks}`}
+            >
+              <ListChecks className="h-5 w-5" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="stat-container">
-        <div className="stat-title">COMPLETED</div>
-        <div className="stat-value">
-          <Badge
-            className={`${
-              percentComplete > 50 ? "bg-indigo-600" : "bg-indigo-300"
-            } text-white px-3 py-1 text-sm rounded-full`}
-          >
-            {counts.percent}%
-          </Badge>
-        </div>
-      </div>
+      <Card className={kpiCardStyles.card}>
+        <CardHeader className={kpiCardStyles.cardHeader}>
+          <CardTitle className={kpiCardStyles.cardTitle}>Completed</CardTitle>
+        </CardHeader>
+        <CardContent className={kpiCardStyles.cardContent}>
+          <div className="flex items-center justify-between">
+            <span className={kpiCardStyles.value}>{completedTasks}</span>
+            <div
+              className={`${kpiCardStyles.icon.base} ${kpiCardStyles.icon.completed}`}
+            >
+              <CheckCircle className="h-5 w-5" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="stat-container">
-        <div className="stat-title">OVERDUE</div>
-        <div className="stat-value">
-          {overdueTasks > 0 ? (
-            <Badge className="bg-rose-500 text-white px-3 py-1 text-sm rounded-full">
-              {counts.overdue}
-            </Badge>
-          ) : (
-            <span className="text-indigo-900">0</span>
-          )}
-        </div>
-      </div>
+      <Card className={kpiCardStyles.card}>
+        <CardHeader className={kpiCardStyles.cardHeader}>
+          <CardTitle className={kpiCardStyles.cardTitle}>Overdue</CardTitle>
+        </CardHeader>
+        <CardContent className={kpiCardStyles.cardContent}>
+          <div className="flex items-center justify-between">
+            <span className={kpiCardStyles.value}>{overdueTasks}</span>
+            <div
+              className={`${kpiCardStyles.icon.base} ${kpiCardStyles.icon.overdue}`}
+            >
+              <Clock className="h-5 w-5" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="stat-container">
-        <div className="stat-title">DEPARTMENTS</div>
-        <div className="stat-value text-indigo-900">{counts.depts}</div>
-      </div>
+      <Card className={kpiCardStyles.card}>
+        <CardHeader className={kpiCardStyles.cardHeader}>
+          <CardTitle className={kpiCardStyles.cardTitle}>
+            Completion Rate
+          </CardTitle>
+        </CardHeader>
+        <CardContent className={kpiCardStyles.cardContent}>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <span className={kpiCardStyles.value}>
+                {percentComplete.toFixed(1)}%
+              </span>
+              <TrendIndicator current={percentComplete} previous={0} />
+            </div>
+            <div
+              className={`${kpiCardStyles.icon.base} ${kpiCardStyles.icon.rate}`}
+            >
+              <CheckCircle className="h-5 w-5" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

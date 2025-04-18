@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Maximize2 } from "lucide-react";
 
+
 interface Props {
   departments: {
     id: string;
@@ -27,14 +28,62 @@ interface Props {
   }[];
 }
 
+const chartStyles = {
+  container: {
+    fullHeight: "h-full",
+    minWidth: "min-w-[800px]",
+  },
+  chart: {
+    bar: {
+      fill: "#4F46E5",
+      radius: [4, 4, 0, 0] as [number, number, number, number],
+      animationDuration: 1500,
+    },
+    grid: {
+      stroke: "#f0f0f0",
+      strokeDasharray: "3 3",
+    },
+    axis: {
+      tick: {
+        fill: "#6B7280",
+        fontSize: 12,
+      },
+      line: {
+        stroke: "#E5E7EB",
+      },
+    },
+  },
+  tooltip: {
+    container: "bg-white p-3 border border-gray-200 shadow rounded-md",
+    label: "font-medium text-gray-800",
+    value: "text-indigo-600",
+    valueHighlight: "font-bold",
+  },
+  dialog: {
+    trigger:
+      "hidden sm:flex items-center justify-center h-8 w-8 rounded-md border border-gray-200 hover:bg-gray-50 cursor-pointer transition-all duration-150",
+    content: "sm:max-w-[90vw] w-[90vw] h-[80vh] bg-white p-0",
+    header: "p-4 border-b",
+    title: "text-xl",
+    contentArea: "p-4 h-[calc(100%-60px)] bg-white overflow-auto",
+  },
+  mobile: {
+    tapToExpand:
+      "mt-2 text-xs text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50",
+  },
+};
+
 // Custom tooltip component for better styling
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-3 border border-gray-200 shadow-md rounded-md">
-        <p className="font-medium text-gray-800">{label}</p>
-        <p className="text-indigo-600">
-          Progress: <span className="font-bold">{payload[0].value}%</span>
+      <div className={chartStyles.tooltip.container}>
+        <p className={chartStyles.tooltip.label}>{label}</p>
+        <p className={chartStyles.tooltip.value}>
+          Progress:{" "}
+          <span className={chartStyles.tooltip.valueHighlight}>
+            {payload[0].value}%
+          </span>
         </p>
       </div>
     );
@@ -59,48 +108,59 @@ export default function CompletionBarChart({ departments }: Props) {
         <Dialog>
           <DialogTrigger asChild>
             <div
-              className="hidden sm:flex items-center justify-center h-8 w-8 rounded-md border border-gray-200 hover:bg-gray-50 cursor-pointer"
+              className={chartStyles.dialog.trigger}
               aria-label="Expand chart"
             >
               <Maximize2 className="h-4 w-4" />
             </div>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[90vw] w-[90vw] h-[80vh] bg-white p-0">
-            <DialogHeader className="p-4 border-b">
-              <DialogTitle className="text-xl">
+          <DialogContent className={chartStyles.dialog.content}>
+            <DialogHeader className={chartStyles.dialog.header}>
+              <DialogTitle className={chartStyles.dialog.title}>
                 Department Completion Rates
               </DialogTitle>
             </DialogHeader>
-            <div className="p-4 h-[calc(100%-60px)] bg-white overflow-auto">
-              <div className="min-w-[800px] h-full">
+            <div className={chartStyles.dialog.contentArea}>
+              <div
+                className={
+                  chartStyles.container.minWidth +
+                  " " +
+                  chartStyles.container.fullHeight
+                }
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={departments}
                     margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <CartesianGrid
+                      strokeDasharray={chartStyles.chart.grid.strokeDasharray}
+                      stroke={chartStyles.chart.grid.stroke}
+                    />
                     <XAxis
                       dataKey="name"
-                      tick={{ fill: "#6B7280", fontSize: 12 }}
-                      axisLine={{ stroke: "#E5E7EB" }}
-                      tickLine={{ stroke: "#E5E7EB" }}
+                      tick={chartStyles.chart.axis.tick}
+                      axisLine={chartStyles.chart.axis.line}
+                      tickLine={chartStyles.chart.axis.line}
                       angle={-45}
                       textAnchor="end"
                       height={60}
                     />
                     <YAxis
                       domain={[0, 100]}
-                      tick={{ fill: "#6B7280", fontSize: 12 }}
-                      axisLine={{ stroke: "#E5E7EB" }}
-                      tickLine={{ stroke: "#E5E7EB" }}
+                      tick={chartStyles.chart.axis.tick}
+                      axisLine={chartStyles.chart.axis.line}
+                      tickLine={chartStyles.chart.axis.line}
                       tickFormatter={(value) => `${value}%`}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar
                       dataKey="progress"
-                      fill="#4F46E5"
-                      radius={[4, 4, 0, 0]}
-                      animationDuration={1500}
+                      fill={chartStyles.chart.bar.fill}
+                      radius={chartStyles.chart.bar.radius}
+                      animationDuration={
+                        chartStyles.chart.bar.animationDuration
+                      }
                     />
                   </BarChart>
                 </ResponsiveContainer>
@@ -122,22 +182,24 @@ export default function CompletionBarChart({ departments }: Props) {
                   >
                     <XAxis
                       dataKey="name"
-                      tick={{ fill: "#6B7280", fontSize: 10 }}
-                      axisLine={{ stroke: "#E5E7EB" }}
+                      tick={{ ...chartStyles.chart.axis.tick, fontSize: 10 }}
+                      axisLine={chartStyles.chart.axis.line}
                       tickLine={false}
                     />
                     <YAxis domain={[0, 100]} hide={true} />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar
                       dataKey="progress"
-                      fill="#4F46E5"
-                      radius={[4, 4, 0, 0]}
-                      animationDuration={1500}
+                      fill={chartStyles.chart.bar.fill}
+                      radius={chartStyles.chart.bar.radius}
+                      animationDuration={
+                        chartStyles.chart.bar.animationDuration
+                      }
                     />
                   </BarChart>
                 </ResponsiveContainer>
                 <div className="flex justify-center">
-                  <div className="mt-2 text-xs text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50">
+                  <div className={chartStyles.mobile.tapToExpand}>
                     {departments.length > 4 &&
                       `+ ${departments.length - 4} more`}{" "}
                     Tap to expand
@@ -145,42 +207,53 @@ export default function CompletionBarChart({ departments }: Props) {
                 </div>
               </div>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[90vw] w-[90vw] h-[80vh] bg-white p-0">
-              <DialogHeader className="p-4 border-b">
-                <DialogTitle className="text-xl">
+            <DialogContent className={chartStyles.dialog.content}>
+              <DialogHeader className={chartStyles.dialog.header}>
+                <DialogTitle className={chartStyles.dialog.title}>
                   Department Completion Rates
                 </DialogTitle>
               </DialogHeader>
-              <div className="p-4 h-[calc(100%-60px)] bg-white overflow-auto">
-                <div className="min-w-[800px] h-full">
+              <div className={chartStyles.dialog.contentArea}>
+                <div
+                  className={
+                    chartStyles.container.minWidth +
+                    " " +
+                    chartStyles.container.fullHeight
+                  }
+                >
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={departments}
                       margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <CartesianGrid
+                        strokeDasharray={chartStyles.chart.grid.strokeDasharray}
+                        stroke={chartStyles.chart.grid.stroke}
+                      />
                       <XAxis
                         dataKey="name"
-                        tick={{ fill: "#6B7280", fontSize: 12 }}
-                        axisLine={{ stroke: "#E5E7EB" }}
-                        tickLine={{ stroke: "#E5E7EB" }}
+                        tick={chartStyles.chart.axis.tick}
+                        axisLine={chartStyles.chart.axis.line}
+                        tickLine={chartStyles.chart.axis.line}
                         angle={-45}
                         textAnchor="end"
                         height={60}
                       />
                       <YAxis
                         domain={[0, 100]}
-                        tick={{ fill: "#6B7280", fontSize: 12 }}
-                        axisLine={{ stroke: "#E5E7EB" }}
-                        tickLine={{ stroke: "#E5E7EB" }}
+                        tick={chartStyles.chart.axis.tick}
+                        axisLine={chartStyles.chart.axis.line}
+                        tickLine={chartStyles.chart.axis.line}
                         tickFormatter={(value) => `${value}%`}
                       />
                       <Tooltip content={<CustomTooltip />} />
                       <Bar
                         dataKey="progress"
-                        fill="#4F46E5"
-                        radius={[4, 4, 0, 0]}
-                        animationDuration={1500}
+                        fill={chartStyles.chart.bar.fill}
+                        radius={chartStyles.chart.bar.radius}
+                        animationDuration={
+                          chartStyles.chart.bar.animationDuration
+                        }
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -190,36 +263,36 @@ export default function CompletionBarChart({ departments }: Props) {
           </Dialog>
         </div>
 
-        {/* Desktop normal view (hidden on small screens) */}
+        {/* Desktop view (hidden on small screens) */}
         <div className="hidden sm:block">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart
               data={departments}
               margin={{ top: 10, right: 10, left: 0, bottom: 20 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <CartesianGrid
+                strokeDasharray={chartStyles.chart.grid.strokeDasharray}
+                stroke={chartStyles.chart.grid.stroke}
+              />
               <XAxis
                 dataKey="name"
-                tick={{ fill: "#6B7280", fontSize: 12 }}
-                axisLine={{ stroke: "#E5E7EB" }}
-                tickLine={{ stroke: "#E5E7EB" }}
-                angle={-45}
-                textAnchor="end"
-                height={60}
+                tick={chartStyles.chart.axis.tick}
+                axisLine={chartStyles.chart.axis.line}
+                tickLine={chartStyles.chart.axis.line}
               />
               <YAxis
                 domain={[0, 100]}
-                tick={{ fill: "#6B7280", fontSize: 12 }}
-                axisLine={{ stroke: "#E5E7EB" }}
-                tickLine={{ stroke: "#E5E7EB" }}
+                tick={chartStyles.chart.axis.tick}
+                axisLine={chartStyles.chart.axis.line}
+                tickLine={chartStyles.chart.axis.line}
                 tickFormatter={(value) => `${value}%`}
               />
               <Tooltip content={<CustomTooltip />} />
               <Bar
                 dataKey="progress"
-                fill="#4F46E5"
-                radius={[4, 4, 0, 0]}
-                animationDuration={1500}
+                fill={chartStyles.chart.bar.fill}
+                radius={chartStyles.chart.bar.radius}
+                animationDuration={chartStyles.chart.bar.animationDuration}
               />
             </BarChart>
           </ResponsiveContainer>
