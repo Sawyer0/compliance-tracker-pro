@@ -140,16 +140,21 @@ export default function CreateTaskModal({ isOpen, onClose, onSuccess }: Props) {
               selectedDepartment={selectedDepartment}
             />
 
-            <DialogFooter className="mt-6 flex justify-end gap-2">
+            <DialogFooter className="mt-6 flex justify-center gap-4">
               <Button
                 type="button"
                 onClick={onClose}
                 variant="secondary"
                 disabled={isCreating}
+                className="min-w-[120px]"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isCreating}>
+              <Button 
+                type="submit" 
+                disabled={isCreating}
+                className="min-w-[120px] bg-blue-600 hover:bg-blue-700 text-white"
+              >
                 {isCreating ? "Creating..." : "Create Task"}
               </Button>
             </DialogFooter>

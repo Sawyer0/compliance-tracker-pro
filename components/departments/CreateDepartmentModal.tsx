@@ -165,13 +165,13 @@ export default function CreateDepartmentModal({
           </form>
         </div>
 
-        <DialogFooter className="flex flex-row justify-end items-center gap-3 mt-4 w-full">
+        <DialogFooter className="flex flex-row justify-center items-center gap-4 mt-4 w-full">
           <Button
             type="button"
             onClick={onClose}
             variant="secondary"
             disabled={isCreating}
-            className="inline-block"
+            className="min-w-[120px]"
           >
             Cancel
           </Button>
@@ -180,7 +180,7 @@ export default function CreateDepartmentModal({
             form="department-form"
             disabled={isCreating}
             variant="default"
-            className="inline-block bg-blue-600 hover:bg-blue-700 text-white"
+            className="min-w-[120px] bg-blue-600 hover:bg-blue-700 text-white"
           >
             {isCreating ? "Creating..." : "Create Department"}
           </Button>
